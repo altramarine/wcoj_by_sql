@@ -32,16 +32,17 @@ class CQ_to_SQL_Holder:
     # self.queries.append(f"SELECT * FROM {prev.query_name}")
   
   def pack(self, prev):
-    self.queries.append(f"WITH")
+    # self.queries.append(f"WITH")
     for q in prev.queries:
-      self.queries.append(f"  {q}") 
-    self.queries.append(f"SELECT * FROM {prev.query_name};")
+      self.queries.append(f"{q}") 
+    # self.queries.append(f"SELECT * FROM {prev.query_name};")
   
 
   def append_query(self, strs):
+    strs = "CREATE TEMP TABLE " + strs
     for i in strs.split('\n'):
       self.queries.append(i)
-    self.queries[-1] = self.queries[-1] + ','
+    self.queries[-1] = self.queries[-1] + ';'
 
 
 def parse_atom(s: str) -> Atom:
@@ -144,14 +145,21 @@ def Prop(atom: Atom, cur_var: str, best_table: str, extra_where_args: list[str],
   return s
 
 def Get_Query_j(atoms: list[Atom], cur_var: str, prop_table: str, newcq_vars: list[str]) -> str:
-  equi = []
+  # equi = []
   var_map = []
   for var in newcq_vars: var_map.append(f"{prop_table}.{var} as {var}")
+  
+  s = f"""SELECT {', '.join(var_map)} FROM {prop_table} """
+  
   for atom in atoms:
+    equi = []
     for (i, var) in enumerate(atom.var_list):
       if(var != "_"):
         equi.append(f"{Name_of_column(atom.table, i)} = {prop_table}.{var}")
-  s = f"""SELECT {', '.join(var_map)} FROM {", ".join(atom.table for atom in atoms)}, {prop_table} {'WHERE (' if len(equi) else ''} {' AND '.join(equi)} {')' if len(equi) else ''} GROUP BY {", ".join(newcq_vars)}"""
+    if len(equi):
+      s = s + f""" SEMI JOIN {atom.table} ON {' AND '.join(equi)}"""
+  # s = f"""SELECT {', '.join(var_map)} FROM {", ".join(atom.table for atom in atoms)}, {prop_table} {'WHERE (' if len(equi) else ''} {' AND '.join(equi)} {')' if len(equi) else ''} GROUP BY {", ".join(newcq_vars)}"""
+  s = s + f""" GROUP BY {", ".join(newcq_vars)}"""
 
   return s
 
@@ -160,16 +168,19 @@ def Get_Query_1(atoms: list[Atom], cur_var: str) -> str:
   var_map = []
 
   var_mappings = {}
-
+  s = """"""
   for atom in atoms:
     for (i, var) in enumerate(atom.var_list):
       if(var == cur_var):
         if var in var_mappings:
           equi.append(f"{Name_of_column(atom.table, i)} = {var_mappings[var]}")
+          s = s + f" SEMI JOIN {atom.table} ON {Name_of_column(atom.table, i)} = {var_mappings[var]}"
         else:
+          s = s + f"SELECT {Name_of_column(atom.table, i)} as {var} FROM {atom.table}"
           var_mappings[var] = Name_of_column(atom.table, i)
           var_map.append(f"{Name_of_column(atom.table, i)} as {var}")
-  s = f"""SELECT {', '.join(var_map)} FROM {", ".join(atom.table for atom in atoms)} {'WHERE (' if len(equi) else ''} {' AND '.join(equi)} {')' if len(equi) else ''} GROUP BY {cur_var}"""
+  # s = f"""SELECT {', '.join(var_map)} FROM {", ".join(atom.table for atom in atoms)} {'WHERE (' if len(equi) else ''} {' AND '.join(equi)} {')' if len(equi) else ''} GROUP BY {cur_var}"""
+  s = s + f""" GROUP BY {cur_var}"""
 
   return s
 
@@ -263,8 +274,8 @@ def CQ_to_SQL(cq: CQ) -> CQ_to_SQL_Holder:
           join_conds = " AND ".join(f"{best_tag}{last_atom}.{var} = {count_name}.{var}" for var in atom.var_list if var != '_' and var != var_this_round)
           select_args = (
             ", ".join(f"{best_tag}{last_atom}.{var} as {var}" for var in holder_.cq.atom_vars)
-            + f", CASE WHEN {best_tag}{last_atom}.{pc_tag} > {count_name}.{f"cnt_{var_this_round}"} THEN {best_tag}{last_atom}.{pi_tag} ELSE {len(atom_list)} END as {pi_tag}"
-            + f", CASE WHEN {best_tag}{last_atom}.{pc_tag} > {count_name}.{f"cnt_{var_this_round}"} THEN {best_tag}{last_atom}.{pc_tag} ELSE {count_name}.{f"cnt_{var_this_round}"} END as {pc_tag}"
+            + f", CASE WHEN {best_tag}{last_atom}.{pc_tag} < {count_name}.{f"cnt_{var_this_round}"} THEN {best_tag}{last_atom}.{pi_tag} ELSE {len(atom_list)} END as {pi_tag}"
+            + f", CASE WHEN {best_tag}{last_atom}.{pc_tag} < {count_name}.{f"cnt_{var_this_round}"} THEN {best_tag}{last_atom}.{pc_tag} ELSE {count_name}.{f"cnt_{var_this_round}"} END as {pc_tag}"
           )
           s = (f"""{best_tag}{atom.table} as ( SELECT {select_args} FROM {best_tag}{last_atom}, {count_name} {'WHERE' if join_conds != '' else ''} {join_conds} ) """)
 
@@ -284,7 +295,7 @@ def CQ_to_SQL(cq: CQ) -> CQ_to_SQL_Holder:
       + f", {best_table_name}.{pi_tag} as {pi_tag}"
     )
 
-    s = (f"""{best_tag} as (SELECT {select_args} FROM {best_tag}{last_atom}, {count_name} {'WHERE' if join_conds != '' else ''} {join_conds} )""")
+    s = (f"""{best_tag} as (SELECT {select_args} FROM {best_tag}{last_atom} {'WHERE' if join_conds != '' else ''} {join_conds} )""")
 
     print(s)
     new_holder.append_query(s)

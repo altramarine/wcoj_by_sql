@@ -1,18 +1,34 @@
 import duckdb
 import sys
 
-def run_sql_file(path: str):
-    with open(path) as f:
-        content = f.read()
-
-    # Split into individual statements on semicolons
-    # Strip trailing commas left by CTE generators before the final SELECT
+def run_sql_file(path: str, con=None):
     import re
-    content = re.sub(r',\s*\n(SELECT\b)', r'\n\1', content)
-    statements = [s.strip() for s in content.split(';') if s.strip()]
+    statements = []
+    current = []
+    with open(path) as f:
+        for line in f:
+            line = re.sub(r',\s*\n', lambda m: m.group(0), line)  # preserve line
+            if line.rstrip().endswith(';'):
+                current.append(line.rstrip().rstrip(';'))
+                stmt = '\n'.join(current).strip()
+                if stmt:
+                    statements.append(stmt)
+                current = []
+            else:
+                current.append(line.rstrip())
+    # handle any trailing statement without semicolon
+    if current:
+        stmt = '\n'.join(current).strip()
+        if stmt:
+            statements.append(stmt)
 
-    con = duckdb.connect()
+    # Strip trailing commas before SELECT (CTE generator artifact)
+    statements = [re.sub(r',\s*\n(SELECT\b)', r'\n\1', s) for s in statements]
+
+    if con is None:
+        con = duckdb.connect()
     for stmt in statements:
+        print(f"--- Executing ---\n{stmt[:200]}\n")
         try:
             result = con.execute(stmt)
             # Print results for SELECT statements
@@ -29,5 +45,15 @@ def run_sql_file(path: str):
             raise
 
 if __name__ == "__main__":
-    path = sys.argv[1] if len(sys.argv) > 1 else "1.sql"
-    run_sql_file(path)
+    con = duckdb.connect()
+    con.execute("CREATE TABLE skitter AS SELECT * FROM read_csv_auto('as-skitter.csv')")
+
+    con.execute("CREATE TEMP TABLE R AS SELECT * FROM skitter")
+
+    print("TEMP IS CREATED")
+
+    import time
+    path = sys.argv[1] if len(sys.argv) > 1 else "2.sql"
+    start = time.time()
+    run_sql_file(path, con)
+    print(f"Execution time: {time.time() - start:.3f}s")
