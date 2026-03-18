@@ -45,15 +45,15 @@ def run_sql_file(path: str, con=None):
             raise
 
 if __name__ == "__main__":
-    con = duckdb.connect()
-    con.execute("CREATE TABLE skitter AS SELECT * FROM read_csv_auto('as-skitter.csv')")
+    con = duckdb.connect(config={"temp_directory": "", "max_memory": "24GB"})
+    con.execute("CREATE TABLE skitter AS SELECT * FROM read_csv_auto('./dataset/as-skitter.csv')")
 
     con.execute("CREATE TEMP TABLE R AS SELECT * FROM skitter")
 
     print("TEMP IS CREATED")
 
     import time
-    path = sys.argv[1] if len(sys.argv) > 1 else "2.sql"
+    path = sys.argv[1] if len(sys.argv) > 1 else "1.sql"
     start = time.time()
     run_sql_file(path, con)
     print(f"Execution time: {time.time() - start:.3f}s")

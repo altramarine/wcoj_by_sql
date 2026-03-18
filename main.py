@@ -1,3 +1,4 @@
+import sys
 import duckdb
 import re
 from dataclasses import dataclass, field
@@ -193,18 +194,18 @@ def CQ_to_SQL(cq: CQ) -> CQ_to_SQL_Holder:
     var_this_round = max(cq.atom_vars)
     
     
-    print(f"var this round = {var_this_round}")
-    
+    print(f"var this round = {var_this_round}", file=sys.stderr)
+
     query_name = "query_0"
     new_holder = CQ_to_SQL_Holder(cq, query_name)
-    
+
     s = (
       f"{query_name} AS ("
       + Get_Query_1([atom for atom in cq.atoms if var_this_round in atom.var_list], var_this_round)
       + ")"
     )
-    
-    print (s)
+
+    print(s, file=sys.stderr)
     new_holder.append_query(s)
 
     return new_holder
@@ -226,13 +227,13 @@ def CQ_to_SQL(cq: CQ) -> CQ_to_SQL_Holder:
     pi_tag = "posi_tag"
     pc_tag = "cnt_tag"
 
-    print(f"var this round = {var_this_round}")
+    print(f"var this round = {var_this_round}", file=sys.stderr)
 
     best_tag = f"{new_holder.query_name}_best_"
 
     for atom in cq.atoms:
       if var_this_round in atom.var_list:
-        print(atom.var_list)
+        print(atom.var_list, file=sys.stderr)
         """count(atom_j to i)"""
 
         count_name = f"{new_holder.query_name}_count_{atom.table}"
@@ -243,7 +244,7 @@ def CQ_to_SQL(cq: CQ) -> CQ_to_SQL_Holder:
         """
 
         s = f"{count_name} as (" + Count(atom, var_this_round) + ")"
-        print(s)
+        print(s, file=sys.stderr)
 
         new_holder.append_query(s)
         
@@ -265,7 +266,7 @@ def CQ_to_SQL(cq: CQ) -> CQ_to_SQL_Holder:
 
           s = (f"""{best_tag}{atom.table} as (SELECT {select_args} FROM {holder_.query_name}, {count_name} {'WHERE' if join_conds != '' else ''} {join_conds} ) """)
 
-          print(s)
+          print(s, file=sys.stderr)
           new_holder.append_query(s)
 
           last_atom  = atom.table
@@ -279,7 +280,7 @@ def CQ_to_SQL(cq: CQ) -> CQ_to_SQL_Holder:
           )
           s = (f"""{best_tag}{atom.table} as ( SELECT {select_args} FROM {best_tag}{last_atom}, {count_name} {'WHERE' if join_conds != '' else ''} {join_conds} ) """)
 
-          print(s)
+          print(s, file=sys.stderr)
           new_holder.append_query(s)
 
           last_atom = atom.table
@@ -297,7 +298,7 @@ def CQ_to_SQL(cq: CQ) -> CQ_to_SQL_Holder:
 
     s = (f"""{best_tag} as (SELECT {select_args} FROM {best_tag}{last_atom} {'WHERE' if join_conds != '' else ''} {join_conds} )""")
 
-    print(s)
+    print(s, file=sys.stderr)
     new_holder.append_query(s)
 
     """
@@ -319,7 +320,7 @@ def CQ_to_SQL(cq: CQ) -> CQ_to_SQL_Holder:
         
         i = i + 1
     s = s + ')'
-    print(s)
+    print(s, file=sys.stderr)
     new_holder.append_query(s)
 
 
@@ -334,9 +335,9 @@ def CQ_to_SQL(cq: CQ) -> CQ_to_SQL_Holder:
       + Get_Query_j(atom_list, var_this_round, prop_tag, cq.atom_vars)
       + ")"
     )
-    print(s)
+    print(s, file=sys.stderr)
     new_holder.append_query(s)
-    
+
     return new_holder
 
     
@@ -344,26 +345,79 @@ def CQ_to_SQL(cq: CQ) -> CQ_to_SQL_Holder:
 
 
 def main():
+  wcoj_dir = sys.argv[1] if len(sys.argv) > 1 else None
+  default_dir = sys.argv[2] if len(sys.argv) > 1 else None
   con = duckdb.connect()
   # extensions
-  # 
-  # 
+  #
+  #
   s = input()
   print(s)
   CQ = parse_CQ(s)
   print( CQ.print() )
+  
+  names = {}
+  
+  select = []
+  equ = []
+  head = []
+  for a in CQ.atoms:
+    orig = a.table
+    count = names.get(orig, 0)
+    # if count > 0:
+    names[orig] = count + 1
+    a.table = f"{orig}_{count + 1}"
+    select.append(f"{orig} as {orig}_{count + 1}")
+
+  for i in CQ.atom_vars:
+    vars_ = []
+    found_one = False
+    for a in CQ.atoms:
+      for idx, j in enumerate(a.var_list):
+        if j == i:
+          if not found_one:
+            head.append(f"{Name_of_column(a.table, idx)} as {i}")
+            found_one = True
+          vars_.append(Name_of_column(a.table, idx))
+    for i in range(1, len(vars_)):
+      equ.append(f"{vars_[i-1]} = {vars_[i]}")
+
+
+  for i in range(50): print("#", end='')
+  print("default sql:", end = '')
+  for i in range(50): print("#", end='')
+  print()
+  
+  out = open(default_dir, "w") if default_dir else sys.stdout
+  try:
+    print(f"CREATE TEMP TABLE __query__result__ AS SELECT {", ".join(head)} FROM {", ".join(select)} WHERE {" and ".join(equ)}", file = out)
+  finally:
+    if default_dir:
+      out.close()
+
+    
   c = CQ_to_SQL(CQ)
 
   x = CQ_to_SQL_Holder(CQ, "q")
   x.pack(c)
 
   for i in range(50): print("#", end='')
-  print("holder's output:", end = '')
+  print("wcoj sql:", end = '')
   for i in range(50): print("#", end='')
   print()
 
-  for l in x.queries:
-    print(l)
+
+  out = open(wcoj_dir, "w") if wcoj_dir else sys.stdout
+  try:
+    for name, cnt in names.items():
+      for j in range(1, cnt + 1):
+        print(f"CREATE VIEW {name}_{j} AS SELECT * FROM {name};", file=out)
+
+    for l in x.queries:
+      print(l, file=out)
+  finally:
+    if wcoj_dir:
+      out.close()
   return
       
 
