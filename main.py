@@ -33,17 +33,49 @@ class CQ_to_SQL_Holder:
     # self.queries.append(f"SELECT * FROM {prev.query_name}")
   
   def pack(self, prev):
-    # self.queries.append(f"WITH")
+    self.queries.append(f"CREATE TEMP TABLE __result__ AS WITH")
     for q in prev.queries:
-      self.queries.append(f"{q}") 
-    # self.queries.append(f"SELECT * FROM {prev.query_name};")
+      self.queries.append(f"{q}")
+    self.queries.append(f"SELECT * FROM {prev.query_name};")
+    # self._drop_unused_tables()
+
+  def _drop_unused_tables(self):
+    # find all created table names and their index
+    created = []
+    for i, q in enumerate(self.queries):
+      m = re.match(r'CREATE TEMP TABLE\s+(\S+)\s+AS', q, re.IGNORECASE)
+      if m:
+        created.append((m.group(1), i))
+
+    last_created_name = created[-1][0] if created else None
+
+    # for each table, find the last query index that references it
+    drops = {}  # index -> list of table names to drop after
+    for name, create_idx in created:
+      if name == last_created_name:
+        continue
+      last_use = -1
+      for i, q in enumerate(self.queries):
+        if i == create_idx:
+          continue
+        if re.search(re.escape(name) + r'[, ]', q):
+          last_use = i
+      if last_use == -1:
+        print(f"[dep WARNING] table '{name}' is never used after creation", file=sys.stderr)
+      else:
+        drops.setdefault(last_use, []).append(name)
+
+    # insert DROP TABLE statements after the last use, in reverse order to not shift indices
+    for idx in sorted(drops.keys(), reverse=True):
+      for name in drops[idx]:
+        self.queries.insert(idx + 1, f"DROP TABLE {name};")
   
 
   def append_query(self, strs):
-    strs = "CREATE TEMP TABLE " + strs
-    for i in strs.split('\n'):
-      self.queries.append(i)
-    self.queries[-1] = self.queries[-1] + ';'
+    # strs = "CREATE TEMP TABLE " + strs
+    # for i in strs.split('\n'):
+    self.queries.append(strs)
+    self.queries[-1] = self.queries[-1] + ','
 
 
 def parse_atom(s: str) -> Atom:
@@ -307,7 +339,9 @@ def CQ_to_SQL(cq: CQ) -> CQ_to_SQL_Holder:
 
     prop_tag = f"{new_holder.query_name}_prop_"
 
-    s=(f"{prop_tag} AS (" + '\n')
+    # s = f"{next_name} AS (\n"
+    
+    s = (f"{prop_tag} AS (" + '\n')
 
     i = 1
     for atom in cq.atoms:
