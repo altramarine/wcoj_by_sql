@@ -3,5 +3,7 @@
 To use:
 
 ```
-python main.py {wcoj_dir} {default_dir}
+uv sync
+
+uv run.sh
 ```
