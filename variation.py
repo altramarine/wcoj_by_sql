@@ -2,6 +2,7 @@ import sys
 import duckdb
 import re
 from dataclasses import dataclass, field
+import math 
 
 @dataclass
 class Atom:
@@ -259,109 +260,112 @@ def CQ_to_SQL(cq_: CQ):
 
   # TODO: make a good bitmap order
 
-  while(bitmap < (1 << (n))):
+  bitmap_order = []
+  for bitmap in range(1, (1 << n)):
     if bitmap & 1 == 1:
-      cq = cq_
+      bitmap_order.append(bitmap)
+  bitmap_order.sort(key = lambda x : x.bit_count() )
+  print(bitmap_order)
+  for bitmap in bitmap_order:
+    cq = cq_
+    
+    query_name = f"query_{print_binary(bitmap)}_"
+
+    active_vars = [variable_list[i] for i in range(0, n) if (bitmap >> i & 1)]
+    non_active_vars = [var for var in variable_list if var not in active_vars]
+
+    last_count_name = ""
+    last_best_name = ""
+
+    # Get query for this coun
+    if bitmap != 1:
+      prop_name = f"_prop_{print_binary(bitmap)}"
+
+      # s = f"{next_name} AS (\n"
       
-      query_name = f"query_{print_binary(bitmap)}_"
+      s = (f"{prop_name} AS (" + '\n')
 
-      active_vars = [variable_list[i] for i in range(0, n) if (bitmap >> i & 1)]
-      non_active_vars = [var for var in variable_list if var not in active_vars]
-
-      last_count_name = ""
-      last_best_name = ""
-
-      # Get query for this coun
-      if bitmap != 1:
-        prop_name = f"_prop_{print_binary(bitmap)}"
-
-        # s = f"{next_name} AS (\n"
-        
-        s = (f"{prop_name} AS (" + '\n')
-
-        atom_list = []
-        for atom in cq.atoms:
-          flag = 0
-          for var_this_round in atom.var_list:
-            if var_this_round in active_vars and var_this_round != initial:
-              if flag == 0:
-                atom_list.append(atom)
-                flag = 1
-              best_name = f"best_{print_binary(bitmap ^ (1 << var_id[var_this_round]))}_"
-              s = s + (
-                Prop(atom, var_this_round, best_name, [f"{best_name}.{pi_tag} = {table_id[atom.table]} AND {best_name}.{var_tag} = {var_id[var_this_round]}"], active_vars)
-              ) 
-              s = s + "\n UNION ALL \n"
-        s = s.removesuffix("\n UNION ALL \n")
-        s = s + ')'
-        print(s, file=sys.stderr)
-        holder.append_query(s)
-
-        s = (
-          f"{query_name} AS ("
-          + Get_Query_j(atom_list, prop_name, active_vars)
-          + ")"
-        )
-        print(s, file=sys.stderr)
-        holder.append_query(s)
-      
-      if bitmap == (1 << (n)) - 1:
-        break
-            
+      atom_list = []
       for atom in cq.atoms:
+        flag = 0
         for var_this_round in atom.var_list:
-          if var_this_round in non_active_vars:
-            
-            count_name = f"count_{print_binary(bitmap)}_{atom.table}_{var_this_round}"
-            best_name = f"best_{print_binary(bitmap)}_{atom.table}_{var_this_round}"
+          if var_this_round in active_vars and var_this_round != initial:
+            if flag == 0:
+              atom_list.append(atom)
+              flag = 1
+            best_name = f"best_{print_binary(bitmap ^ (1 << var_id[var_this_round]))}_"
+            s = s + (
+              Prop(atom, var_this_round, best_name, [f"{best_name}.{pi_tag} = {table_id[atom.table]} AND {best_name}.{var_tag} = {var_id[var_this_round]}"], active_vars)
+            ) 
+            s = s + "\n UNION ALL \n"
+      s = s.removesuffix("\n UNION ALL \n")
+      s = s + ')'
+      print(s, file=sys.stderr)
+      holder.append_query(s)
 
-            s = f"{count_name} AS (" + Count(atom, var_this_round, active_vars) + ")"
+      s = (
+        f"{query_name} AS ("
+        + Get_Query_j(atom_list, prop_name, active_vars)
+        + ")"
+      )
+      print(s, file=sys.stderr)
+      holder.append_query(s)
+    
+    if bitmap == (1 << (n)) - 1:
+      break
+          
+    for atom in cq.atoms:
+      for var_this_round in atom.var_list:
+        if var_this_round in non_active_vars:
+          
+          count_name = f"count_{print_binary(bitmap)}_{atom.table}_{var_this_round}"
+          best_name = f"best_{print_binary(bitmap)}_{atom.table}_{var_this_round}"
+
+          s = f"{count_name} AS (" + Count(atom, var_this_round, active_vars) + ")"
+          print(s, file=sys.stderr)
+          holder.append_query(s)
+
+          if last_count_name == "":
+            join_conds = " AND ".join(f"{query_name}.{var} = {count_name}.{var}" for var in atom.var_list if var in active_vars)
+            select_args = (
+              ", ".join(f"{query_name}.{var} as {var}" for var in active_vars)
+              + f", {table_id[atom.table]} as {pi_tag}"
+              + f", {var_id[var_this_round]} as {var_tag}"
+              + f", {count_name}.{f"cnt_{var_this_round}"} as {pc_tag}"
+            )
+            s = (f"""{best_name} as (SELECT {select_args} FROM {query_name}, {count_name} {'WHERE' if join_conds != '' else ''} {join_conds} ) """)
+
             print(s, file=sys.stderr)
             holder.append_query(s)
 
-            if last_count_name == "":
-              join_conds = " AND ".join(f"{query_name}.{var} = {count_name}.{var}" for var in atom.var_list if var in active_vars)
-              select_args = (
-                ", ".join(f"{query_name}.{var} as {var}" for var in active_vars)
-                + f", {table_id[atom.table]} as {pi_tag}"
-                + f", {var_id[var_this_round]} as {var_tag}"
-                + f", {count_name}.{f"cnt_{var_this_round}"} as {pc_tag}"
-              )
-              s = (f"""{best_name} as (SELECT {select_args} FROM {query_name}, {count_name} {'WHERE' if join_conds != '' else ''} {join_conds} ) """)
+          else:
+            join_conds = " AND ".join(f"{last_best_name}.{var} = {count_name}.{var}" for var in atom.var_list if var in active_vars)
+            select_args = (
+              ", ".join(f"{last_best_name}.{var} as {var}" for var in active_vars)
+              + f", CASE WHEN {last_best_name}.{pc_tag} < {count_name}.{f"cnt_{var_this_round}"} THEN {last_best_name}.{pi_tag} ELSE {table_id[atom.table]} END as {pi_tag}"
+              + f", CASE WHEN {last_best_name}.{pc_tag} < {count_name}.{f"cnt_{var_this_round}"} THEN {last_best_name}.{var_tag} ELSE {var_id[var_this_round]} END as {var_tag}"
+              + f", CASE WHEN {last_best_name}.{pc_tag} < {count_name}.{f"cnt_{var_this_round}"} THEN {last_best_name}.{pc_tag} ELSE {count_name}.{f"cnt_{var_this_round}"} END as {pc_tag}"
+            )
+            s = (f"""{best_name} AS ( SELECT {select_args} FROM {last_best_name}, {count_name} {'WHERE' if join_conds != '' else ''} {join_conds} ) """)
 
-              print(s, file=sys.stderr)
-              holder.append_query(s)
+            print(s, file=sys.stderr)
+            holder.append_query(s)
+          last_count_name = count_name
+          last_best_name = best_name
 
-            else:
-              join_conds = " AND ".join(f"{last_best_name}.{var} = {count_name}.{var}" for var in atom.var_list if var in active_vars)
-              select_args = (
-                ", ".join(f"{last_best_name}.{var} as {var}" for var in active_vars)
-                + f", CASE WHEN {last_best_name}.{pc_tag} < {count_name}.{f"cnt_{var_this_round}"} THEN {last_best_name}.{pi_tag} ELSE {table_id[atom.table]} END as {pi_tag}"
-                + f", CASE WHEN {last_best_name}.{pc_tag} < {count_name}.{f"cnt_{var_this_round}"} THEN {last_best_name}.{var_tag} ELSE {var_id[var_this_round]} END as {var_tag}"
-                + f", CASE WHEN {last_best_name}.{pc_tag} < {count_name}.{f"cnt_{var_this_round}"} THEN {last_best_name}.{pc_tag} ELSE {count_name}.{f"cnt_{var_this_round}"} END as {pc_tag}"
-              )
-              s = (f"""{best_name} AS ( SELECT {select_args} FROM {last_best_name}, {count_name} {'WHERE' if join_conds != '' else ''} {join_conds} ) """)
+    # best_table_name = last_best_name
+    join_conds = ''
+    select_args = (
+      ", ".join(f"{last_best_name}.{var} as {var}" for var in active_vars)
+      + f", {last_best_name}.{pi_tag} as {pi_tag}"
+      + f", {last_best_name}.{var_tag} as {var_tag}"
+    )
+    best_tag = f"best_{print_binary(bitmap)}_"
 
-              print(s, file=sys.stderr)
-              holder.append_query(s)
-            last_count_name = count_name
-            last_best_name = best_name
-
-      # best_table_name = last_best_name
-      join_conds = ''
-      select_args = (
-        ", ".join(f"{last_best_name}.{var} as {var}" for var in active_vars)
-        + f", {last_best_name}.{pi_tag} as {pi_tag}"
-        + f", {last_best_name}.{var_tag} as {var_tag}"
-      )
-      best_tag = f"best_{print_binary(bitmap)}_"
-
-      s = (f"""{best_tag} AS (SELECT {select_args} FROM {last_best_name})""")
-      print(s, file=sys.stderr)
-      
-      holder.append_query(s)
-      # last_atom  = atom.table
-    bitmap = bitmap + 1
+    s = (f"""{best_tag} AS (SELECT {select_args} FROM {last_best_name})""")
+    print(s, file=sys.stderr)
+    
+    holder.append_query(s)
 
   return holder
 

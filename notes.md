@@ -16,3 +16,15 @@ query_1 AS MATERIALIZED (
   ...
 )
 ```
+
+variation would:
+
+for every bitmask
+1. generate query_{bitmask} from possible best_{past_bitmask} 
+2. search for every possible extension (pos_id, var_id), as best_{bitmask}
+
+- large constant merging query_{bitmask} to every query
+- intermediate result from query is large.
+
+- best_{bitmask} is materialized - to wait for query_{bitmask}
+- extra overhead compared to normal WCOJ - var_id introduced and materialized.
