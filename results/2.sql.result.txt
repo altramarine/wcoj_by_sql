@@ -1,0 +1,3 @@
+wcoj Execution time: 191.770s
+default Execution time: 45.104s
+variation Execution time: 231.306s

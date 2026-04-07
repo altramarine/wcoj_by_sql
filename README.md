@@ -5,5 +5,5 @@ To use:
 ```
 uv sync
 
-uv run.sh
+run.sh
 ```
