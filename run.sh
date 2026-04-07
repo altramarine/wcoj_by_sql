@@ -4,7 +4,7 @@ uv sync
 mkdir -p log
 mkdir -p tmp
 
-for qfile in 2.sql; do
+for qfile in 1.sql 2.sql 3.sql 6.sql; do
 
 result_file="./results/${qfile}.result.txt"
 

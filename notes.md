@@ -27,4 +27,15 @@ for every bitmask
 - intermediate result from query is large.
 
 - best_{bitmask} is materialized - to wait for query_{bitmask}
-- extra overhead compared to normal WCOJ - var_id introduced and materialized.
+- extra overhead compared to normal WCOJ 
+  - var_id introduced and materialized. this is not bottleneck!
+  - every varaible is scanned multiple times
+  - where does q2's runtime overhead comefrom?
+
+q2: 
+wcoj_var: len(prop_1111) = 13576777569
+wcoj    : len(prop_3) = 13627736762
+
+q3: 
+wcoj_var: len(prop_1111) = 10267520216
+wcoj    : len(prop_3) = 12736152112

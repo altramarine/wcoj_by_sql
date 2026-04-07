@@ -295,7 +295,7 @@ def CQ_to_SQL(cq_: CQ):
               flag = 1
             best_name = f"best_{print_binary(bitmap ^ (1 << var_id[var_this_round]))}_"
             s = s + (
-              Prop(atom, var_this_round, best_name, [f"{best_name}.{pi_tag} = {table_id[atom.table]} AND {best_name}.{var_tag} = {var_id[var_this_round]}"], active_vars)
+              Prop(atom, var_this_round, best_name, [f"{best_name}.{pi_tag} = {table_id[atom.table] * n + var_id[var_this_round]}"], active_vars)
             ) 
             s = s + "\n UNION ALL \n"
       s = s.removesuffix("\n UNION ALL \n")
@@ -326,11 +326,13 @@ def CQ_to_SQL(cq_: CQ):
           holder.append_query(s)
 
           if last_count_name == "":
+            
+            pi_for_this = table_id[atom.table] * n + var_id[var_this_round]
             join_conds = " AND ".join(f"{query_name}.{var} = {count_name}.{var}" for var in atom.var_list if var in active_vars)
             select_args = (
               ", ".join(f"{query_name}.{var} as {var}" for var in active_vars)
-              + f", {table_id[atom.table]} as {pi_tag}"
-              + f", {var_id[var_this_round]} as {var_tag}"
+              + f", {pi_for_this} as {pi_tag}"
+              # + f", {var_id[var_this_round]} as {var_tag}"
               + f", {count_name}.{f"cnt_{var_this_round}"} as {pc_tag}"
             )
             s = (f"""{best_name} as (SELECT {select_args} FROM {query_name}, {count_name} {'WHERE' if join_conds != '' else ''} {join_conds} ) """)
@@ -339,11 +341,12 @@ def CQ_to_SQL(cq_: CQ):
             holder.append_query(s)
 
           else:
+            pi_for_this = table_id[atom.table] * len(variable_list) + var_id[var_this_round]
             join_conds = " AND ".join(f"{last_best_name}.{var} = {count_name}.{var}" for var in atom.var_list if var in active_vars)
             select_args = (
               ", ".join(f"{last_best_name}.{var} as {var}" for var in active_vars)
-              + f", CASE WHEN {last_best_name}.{pc_tag} < {count_name}.{f"cnt_{var_this_round}"} THEN {last_best_name}.{pi_tag} ELSE {table_id[atom.table]} END as {pi_tag}"
-              + f", CASE WHEN {last_best_name}.{pc_tag} < {count_name}.{f"cnt_{var_this_round}"} THEN {last_best_name}.{var_tag} ELSE {var_id[var_this_round]} END as {var_tag}"
+              + f", CASE WHEN {last_best_name}.{pc_tag} < {count_name}.{f"cnt_{var_this_round}"} THEN {last_best_name}.{pi_tag} ELSE {pi_for_this} END as {pi_tag}"
+              # + f", CASE WHEN {last_best_name}.{pc_tag} < {count_name}.{f"cnt_{var_this_round}"} THEN {last_best_name}.{var_tag} ELSE {var_id[var_this_round]} END as {var_tag}"
               + f", CASE WHEN {last_best_name}.{pc_tag} < {count_name}.{f"cnt_{var_this_round}"} THEN {last_best_name}.{pc_tag} ELSE {count_name}.{f"cnt_{var_this_round}"} END as {pc_tag}"
             )
             s = (f"""{best_name} AS ( SELECT {select_args} FROM {last_best_name}, {count_name} {'WHERE' if join_conds != '' else ''} {join_conds} ) """)
@@ -358,7 +361,7 @@ def CQ_to_SQL(cq_: CQ):
     select_args = (
       ", ".join(f"{last_best_name}.{var} as {var}" for var in active_vars)
       + f", {last_best_name}.{pi_tag} as {pi_tag}"
-      + f", {last_best_name}.{var_tag} as {var_tag}"
+      # + f", {last_best_name}.{var_tag} as {var_tag}"
     )
     best_tag = f"best_{print_binary(bitmap)}_"
 
