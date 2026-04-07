@@ -170,6 +170,9 @@ def Prop(atom: Atom, cur_var: str, best_table: str, extra_where_args: list[str],
         equi.append(f"{Name_of_column(atom.table, i)} = {best_table}.{var}")
   equi.extend(extra_where_args)
 
+  
+
+  var_map.sort(key=lambda x: x.split(' as ')[-1])
   if cur_var in var_mappings:
     s = f"""SELECT {', '.join(var_map)} FROM {atom.table}, {best_table} {'WHERE (' if len(equi) else ''} {' AND '.join(equi)} {')' if len(equi) else ''} """
   else:
