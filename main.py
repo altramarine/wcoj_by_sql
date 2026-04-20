@@ -149,12 +149,15 @@ def Count(atom: Atom, cur_var: str) -> str:
 
 
 # best_table does not have cur_var
-def Prop(atom: Atom, cur_var: str, best_table: str, extra_where_args: list[str], cq_vars: list[str]) -> str:
+def Prop(atom: Atom, cur_var: str, best_table: str, extra_where_args: list[str], cq_vars: list[str], atoms: list[Atom]) -> str:
   var_mappings = {}
   equi = []
   var_map = []
-  for var in cq_vars: var_map.append(f"{best_table}.{var} as {var}")
 
+  var_mappings2 = {}
+  for var in cq_vars: 
+    var_map.append(f"{best_table}.{var} as {var}")
+    var_mappings2[var] = f"{best_table}.{var}"
   for (i, var) in enumerate(atom.var_list):
     # print(i, var)
     if(var == '_'):
@@ -166,15 +169,26 @@ def Prop(atom: Atom, cur_var: str, best_table: str, extra_where_args: list[str],
       else:
         var_mappings[var] = i
         var_map.append(f"{Name_of_column(atom.table, i)} as {var}")
+        var_mappings2[var] = Name_of_column(atom.table, i)
     else:
       # var_map.append((var, f"{best_table}.{var} as {var}"))
       equi.append(f"{Name_of_column(atom.table, i)} = {best_table}.{var}")
   equi.extend(extra_where_args)
 
   if cur_var in var_mappings:
-    s = f"""SELECT {', '.join(var_map)} FROM {atom.table}, {best_table} {'WHERE (' if len(equi) else ''} {' AND '.join(equi)} {')' if len(equi) else ''} """
+    s = f"""SELECT {', '.join(var_map)} FROM {best_table} JOIN {atom.table} {'ON (' if len(equi) else ''} {' AND '.join(equi)} {')' if len(equi) else ''} """
   else:
     print(f"Prop() ERROR !!!!! [{cur_var} not in var_map for atom = {atom.table}] CHECK IMPLEMENTATION")
+    return 
+  atom_ = atom
+  for atom in atoms:
+    if atom != atom_:
+      equi = []
+      for (i, var) in enumerate(atom.var_list):
+        if(var != "_"):
+          equi.append(f"{Name_of_column(atom.table, i)} = {var_mappings2[var]}")
+      if len(equi):
+        s = s + f""" SEMI JOIN {atom.table} ON {' AND '.join(equi)}"""
   return s
 
 def Get_Query_j(atoms: list[Atom], cur_var: str, prop_table: str, newcq_vars: list[str]) -> str:
@@ -184,13 +198,13 @@ def Get_Query_j(atoms: list[Atom], cur_var: str, prop_table: str, newcq_vars: li
   
   s = f"""SELECT {', '.join(var_map)} FROM {prop_table} """
   
-  for atom in atoms:
-    equi = []
-    for (i, var) in enumerate(atom.var_list):
-      if(var != "_"):
-        equi.append(f"{Name_of_column(atom.table, i)} = {prop_table}.{var}")
-    if len(equi):
-      s = s + f""" SEMI JOIN {atom.table} ON {' AND '.join(equi)}"""
+  # for atom in atoms:
+  #   equi = []
+  #   for (i, var) in enumerate(atom.var_list):
+  #     if(var != "_"):
+  #       equi.append(f"{Name_of_column(atom.table, i)} = {prop_table}.{var}")
+  #   if len(equi):
+  #     s = s + f""" SEMI JOIN {atom.table} ON {' AND '.join(equi)}"""
   # s = f"""SELECT {', '.join(var_map)} FROM {", ".join(atom.table for atom in atoms)}, {prop_table} {'WHERE (' if len(equi) else ''} {' AND '.join(equi)} {')' if len(equi) else ''} GROUP BY {", ".join(newcq_vars)}"""
   s = s + f""" GROUP BY {", ".join(newcq_vars)}"""
 
@@ -341,13 +355,13 @@ def CQ_to_SQL(cq: CQ) -> CQ_to_SQL_Holder:
 
     # s = f"{next_name} AS (\n"
     
-    s = (f"{prop_tag} AS (" + '\n')
+    s = (f"{next_name} AS (" + '\n')
 
     i = 1
     for atom in cq.atoms:
       if var_this_round in atom.var_list:
         s = s + (
-          Prop(atom, var_this_round, best_tag, [f"{best_tag}.{pi_tag} = {i}"], holder_.cq.atom_vars)
+          Prop(atom, var_this_round, best_tag, [f"{best_tag}.{pi_tag} = {i}"], holder_.cq.atom_vars, atom_list)
         ) 
         if(i < len(atom_list)):
           s = s + "\n UNION ALL \n"
@@ -364,13 +378,13 @@ def CQ_to_SQL(cq: CQ) -> CQ_to_SQL_Holder:
     """
     
     
-    s = (
-      f"{next_name} AS ("
-      + Get_Query_j(atom_list, var_this_round, prop_tag, cq.atom_vars)
-      + ")"
-    )
-    print(s, file=sys.stderr)
-    new_holder.append_query(s)
+    # s = (
+    #   f"{next_name} AS ("
+    #   + Get_Query_j(atom_list, var_this_round, prop_tag, cq.atom_vars)
+    #   + ")"
+    # )
+    # print(s, file=sys.stderr)
+    # new_holder.append_query(s)
 
     return new_holder
 

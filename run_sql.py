@@ -46,7 +46,7 @@ def run_sql_file(path: str, con=None):
 
 if __name__ == "__main__":
     con = duckdb.connect(config={"temp_directory": "", "max_memory": "256GB"})
-    con.execute("CREATE TABLE skitter AS SELECT * FROM read_csv_auto('./dataset/as-skitter.csv')")
+    con.execute("CREATE TABLE skitter AS SELECT * FROM read_csv_auto('./datasets/as-skitter.csv')")
 
     con.execute("CREATE TEMP TABLE R AS SELECT * FROM skitter")
 

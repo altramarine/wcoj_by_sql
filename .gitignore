@@ -9,8 +9,8 @@ wheels/
 # Virtual environments
 .venv
 
-# dataset
-/dataset
+# datasets
+/datasets
 
 # runtime logs
 /tmp
