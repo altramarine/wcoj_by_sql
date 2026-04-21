@@ -4,12 +4,12 @@ uv sync
 mkdir -p log
 mkdir -p tmp
 
-for qfile in 1-var.sql; do
+for qfile in 1.sql; do
 
 result_file="./results/${qfile}.result.txt"
 
 # uv run python variation.py tmp/wcoj_var.sql tmp/default.sql < queries/${qfile}
-# uv run python main.py tmp/wcoj.sql tmp/default.sql < queries/${qfile}
+uv run python optm.py tmp/wcoj.sql tmp/default.sql < queries/${qfile}
 
 uv run python run_sql.py tmp/wcoj.sql > log/wcoj.txt
 grep "Execution time:" log/wcoj.txt | sed 's/Execution time:/wcoj Execution time:/' >> ${result_file}

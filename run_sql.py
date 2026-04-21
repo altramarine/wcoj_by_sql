@@ -48,8 +48,8 @@ if __name__ == "__main__":
     import pathlib
     con = duckdb.connect(config={"temp_directory": "", "max_memory": "220GB"})
     
-    con.execute("CREATE TABLE graph AS SELECT * FROM read_csv_auto('./datasets/as-skitter.csv');")
-    # con.execute("CREATE TABLE graph AS SELECT * FROM read_csv_auto('./datasets/wiki-topcats.csv');")
+    # con.execute("CREATE TABLE graph AS SELECT * FROM read_csv_auto('./datasets/as-skitter.csv');")
+    con.execute("CREATE TABLE graph AS SELECT * FROM read_csv_auto('./datasets/wiki-topcats.csv');")
     con.execute("SET THREADS=32;")
     con.execute("CREATE TEMP TABLE R AS SELECT * FROM graph;")
 

@@ -34,10 +34,11 @@ class CQ_to_SQL_Holder:
     # self.queries.append(f"SELECT * FROM {prev.query_name}")
   
   def pack(self, prev):
-    self.queries.append(f"CREATE TEMP TABLE __result__ AS WITH")
+    # self.queries.append(f"CREATE TEMP TABLE __result__ AS WITH")
     for q in prev.queries:
       self.queries.append(f"{q}")
-    self.queries.append(f"SELECT * FROM {prev.query_name};")
+    self.queries = self.queries[:-1]
+    # self.queries.append(f"SELECT * FROM {prev.query_name};")
     # self._drop_unused_tables()
 
   def _drop_unused_tables(self):
@@ -76,7 +77,7 @@ class CQ_to_SQL_Holder:
     # strs = "CREATE TEMP TABLE " + strs
     # for i in strs.split('\n'):
     self.queries.append(strs)
-    self.queries[-1] = self.queries[-1] + ','
+    self.queries[-1] = 'CREATE TEMP TABLE ' + self.queries[-1] + ';'
 
 
 def parse_atom(s: str) -> Atom:
@@ -180,6 +181,50 @@ def Prop(atom: Atom, cur_var: str, best_table: str, extra_where_args: list[str],
     print(f"Prop() ERROR !!!!! [{cur_var} not in var_map for atom = {atom.table}] CHECK IMPLEMENTATION")
   return s
 
+
+# best_table does not have cur_var
+def PropAndGetQuery(atom: Atom, cur_var: str, best_table: str, extra_where_args: list[str], cq_vars: list[str], atoms: list[Atom]) -> str:
+  var_mappings = {}
+  equi = []
+  var_map = []
+
+  var_mappings2 = {}
+  for var in cq_vars: 
+    var_map.append(f"{best_table}.{var} as {var}")
+    var_mappings2[var] = f"{best_table}.{var}"
+  for (i, var) in enumerate(atom.var_list):
+    # print(i, var, cur_var)
+    if var not in cq_vars and var != cur_var:
+      continue
+    # print(var)
+    if(var == cur_var):
+      if var in var_mappings:
+        equi.append(f"{Name_of_column(atom.table, i)} = {Name_of_column(atom.table, var_mappings[var])}")
+      else:
+        var_mappings[var] = i
+        var_map.append(f"{Name_of_column(atom.table, i)} as {var}")
+        var_mappings2[var] = Name_of_column(atom.table, i)
+    else:
+      # var_map.append((var, f"{best_table}.{var} as {var}"))
+      equi.append(f"{Name_of_column(atom.table, i)} = {best_table}.{var}")
+  equi.extend(extra_where_args)
+
+  if cur_var in var_mappings:
+    s = f"""SELECT {', '.join(var_map)} FROM {best_table} JOIN {atom.table} {'ON (' if len(equi) else ''} {' AND '.join(equi)} {')' if len(equi) else ''} """
+  else:
+    print(f"Prop() ERROR !!!!! [{cur_var} not in var_map for atom = {atom.table}] CHECK IMPLEMENTATION")
+    return 
+  atom_ = atom
+  for atom in atoms:
+    if atom != atom_:
+      equi = []
+      for (i, var) in enumerate(atom.var_list):
+        if var in cq_vars or var == cur_var:
+          equi.append(f"{Name_of_column(atom.table, i)} = {var_mappings2[var]}")
+      if len(equi):
+        s = s + f""" SEMI JOIN {atom.table} ON {' AND '.join(equi)}"""
+  return s
+
 def Get_Query_j(atoms: list[Atom], prop_table: str, newcq_vars: list[str]) -> str:
   # equi = []
   var_map = []
@@ -260,70 +305,45 @@ def CQ_to_SQL(cq_: CQ):
 
   # TODO: make a good bitmap order
 
-  bitmap_order = []
-  for bitmap in range(1, (1 << n)):
-    if bitmap & 1 == 1:
-      bitmap_order.append(bitmap)
-  bitmap_order.sort(key = lambda x : x.bit_count() )
-  print(bitmap_order)
-  for bitmap in bitmap_order:
+  # bitmap_order = []
+  # for bitmap in range(1, (1 << n)):
+  #   if bitmap & 1 == 1:
+  #     bitmap_order.append(bitmap)
+  # bitmap_order.sort(key = lambda x : x.bit_count() )
+  # print(bitmap_order)
+  while(True):
     cq = cq_
     
-    query_name = f"query_{print_binary(bitmap)}_"
+    if bitmap == (1 << (n)) - 1:
+      break
+    
 
     active_vars = [variable_list[i] for i in range(0, n) if (bitmap >> i & 1)]
+    print(active_vars)
     non_active_vars = [var for var in variable_list if var not in active_vars]
 
     last_count_name = ""
     last_best_name = ""
 
-    # Get query for this coun
-    if bitmap != 1:
-      prop_name = f"_prop_{print_binary(bitmap)}"
+    query_name = f"query_{print_binary(bitmap)}_"
+    best_tag = f"best_{print_binary(bitmap)}_"
 
-      # s = f"{next_name} AS (\n"
-      
-      s = (f"{prop_name} AS (" + '\n')
+    S_best = f"{best_tag} as WITH \n";
 
-      atom_list = []
-      for atom in cq.atoms:
-        flag = 0
-        for var_this_round in atom.var_list:
-          if var_this_round in active_vars and var_this_round != initial:
-            if flag == 0:
-              atom_list.append(atom)
-              flag = 1
-            best_name = f"best_{print_binary(bitmap ^ (1 << var_id[var_this_round]))}_"
-            s = s + (
-              Prop(atom, var_this_round, best_name, [f"{best_name}.{pi_tag} = {table_id[atom.table] * n + var_id[var_this_round]}"], active_vars)
-            ) 
-            s = s + "\n UNION ALL \n"
-      s = s.removesuffix("\n UNION ALL \n")
-      s = s + ')'
-      print(s, file=sys.stderr)
-      holder.append_query(s)
-
-      s = (
-        f"{query_name} AS ("
-        + Get_Query_j(atom_list, prop_name, active_vars)
-        + ")"
-      )
-      print(s, file=sys.stderr)
-      holder.append_query(s)
-    
-    if bitmap == (1 << (n)) - 1:
-      break
-          
+    var_this_round = non_active_vars[0];
+    print(var_this_round)
     for atom in cq.atoms:
-      for var_this_round in atom.var_list:
-        if var_this_round in non_active_vars:
+      # for var_this_round in atom.var_list:
+        if var_this_round in atom.var_list:
           
           count_name = f"count_{print_binary(bitmap)}_{atom.table}_{var_this_round}"
           best_name = f"best_{print_binary(bitmap)}_{atom.table}_{var_this_round}"
 
           s = f"{count_name} AS (" + Count(atom, var_this_round, active_vars) + ")"
           print(s, file=sys.stderr)
-          holder.append_query(s)
+          # holder.append_query(s)
+          
+          S_best = S_best + s + ',\n';
 
           if last_count_name == "":
             
@@ -336,10 +356,9 @@ def CQ_to_SQL(cq_: CQ):
               + f", {count_name}.{f"cnt_{var_this_round}"} as {pc_tag}"
             )
             s = (f"""{best_name} as (SELECT {select_args} FROM {query_name}, {count_name} {'WHERE' if join_conds != '' else ''} {join_conds} ) """)
-
             print(s, file=sys.stderr)
-            holder.append_query(s)
-
+            # holder.append_query(s)
+            S_best = S_best + s + ',\n';
           else:
             pi_for_this = table_id[atom.table] * len(variable_list) + var_id[var_this_round]
             join_conds = " AND ".join(f"{last_best_name}.{var} = {count_name}.{var}" for var in atom.var_list if var in active_vars)
@@ -352,7 +371,8 @@ def CQ_to_SQL(cq_: CQ):
             s = (f"""{best_name} AS ( SELECT {select_args} FROM {last_best_name}, {count_name} {'WHERE' if join_conds != '' else ''} {join_conds} ) """)
 
             print(s, file=sys.stderr)
-            holder.append_query(s)
+            # holder.append_query(s)
+            S_best = S_best + s + ',\n';
           last_count_name = count_name
           last_best_name = best_name
 
@@ -365,11 +385,51 @@ def CQ_to_SQL(cq_: CQ):
     )
     best_tag = f"best_{print_binary(bitmap)}_"
 
-    s = (f"""{best_tag} AS (SELECT {select_args} FROM {last_best_name})""")
-    print(s, file=sys.stderr)
+    s = (f"""SELECT {select_args} FROM {last_best_name}""")
+    # print(s, file=sys.stderr)
+    S_best = S_best + s + '\n'
     
-    holder.append_query(s)
+    holder.append_query(S_best)
+    
+    # Get query for this coun
+    if True:
+      query_name = f"query_{print_binary(bitmap | (1 << var_id[var_this_round]))}_"
+      prop_name = f"_prop_{print_binary(bitmap | (1 << var_id[var_this_round]))}"
 
+      # s = f"{next_name} AS (\n"
+      
+      s = (f"{query_name} AS (" + '\n')
+
+      atom_list = []
+      for atom in cq.atoms:
+        flag = 0
+        if var_this_round in atom.var_list:
+          if flag == 0:
+            atom_list.append(atom)
+            flag = 1
+          best_name = f"best_{print_binary(bitmap)}_"
+          s = s + (
+            PropAndGetQuery(atom, var_this_round, best_name, [f"{best_name}.{pi_tag} = {table_id[atom.table] * n + var_id[var_this_round]}"], active_vars, [atom for atom in cq.atoms if var_this_round in atom.var_list])
+          ) 
+          s = s + "\n UNION ALL \n"
+      s = s.removesuffix("\n UNION ALL \n")
+      s = s + ')'
+      print(s, file=sys.stderr)
+      holder.append_query(s)
+
+      # s = (
+      #   f"{query_name} AS ("
+      #   + Get_Query_j(atom_list, prop_name, active_vars)
+      #   + ")"
+      # )
+      # print(s, file=sys.stderr)
+      # holder.append_query(s)
+    print(var_this_round)
+    # print(var_id[var_this_round])
+    bitmap = bitmap | (1 << var_id[var_this_round])
+    print(f"NEW BITMAP = {bitmap}")
+    
+  holder._drop_unused_tables();
   return holder
 
 def main():

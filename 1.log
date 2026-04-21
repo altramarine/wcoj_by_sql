@@ -1,0 +1,43 @@
+q(x, y, z) :- R(x, y), R(y, z), R(z, x)
+q(y, z, x) :- R(x, y), R(y, z), R(z, x)
+##################################################default sql:##################################################
+CREATE TEMP TABLE __query__result__ AS SELECT R_1.col0 as x, R_1.col1 as y, R_2.col1 as z FROM R as R_1, R as R_2, R as R_3 WHERE R_1.col0 = R_3.col1 and R_1.col1 = R_2.col0 and R_2.col1 = R_3.col0;
+['x', 'y', 'z']
+['x']
+y
+y
+NEW BITMAP = 3
+['x', 'y']
+z
+z
+NEW BITMAP = 7
+##################################################wcoj sql:##################################################
+CREATE VIEW R_1 AS SELECT * FROM R;
+CREATE VIEW R_2 AS SELECT * FROM R;
+CREATE VIEW R_3 AS SELECT * FROM R;
+CREATE TEMP TABLE __result__ AS WITH
+CREATE TEMP TABLE query_100_ AS (SELECT R_1.col0 as x FROM R_1 SEMI JOIN R_3 ON R_3.col1 = R_1.col0 GROUP BY x);
+CREATE TEMP TABLE count_100_R_1_y AS (SELECT R_1.col0 as x, COUNT(DISTINCT R_1.col1) as cnt_y FROM R_1    GROUP BY  R_1.col0 );
+CREATE TEMP TABLE count_100_R_2_y AS (SELECT COUNT(DISTINCT R_2.col0) as cnt_y FROM R_2      );
+CREATE TEMP TABLE best_100_ as WITH 
+best_100_R_1_y as (SELECT query_100_.x as x, 1 as posi_tag, count_100_R_1_y.cnt_y as cnt_tag FROM query_100_, count_100_R_1_y WHERE query_100_.x = count_100_R_1_y.x ) 
+best_100_R_2_y AS ( SELECT best_100_R_1_y.x as x, CASE WHEN best_100_R_1_y.cnt_tag < count_100_R_2_y.cnt_y THEN best_100_R_1_y.posi_tag ELSE 4 END as posi_tag, CASE WHEN best_100_R_1_y.cnt_tag < count_100_R_2_y.cnt_y THEN best_100_R_1_y.cnt_tag ELSE count_100_R_2_y.cnt_y END as cnt_tag FROM best_100_R_1_y, count_100_R_2_y   ) 
+SELECT best_100_R_2_y.x as x, best_100_R_2_y.posi_tag as posi_tag FROM best_100_R_2_y
+;
+DROP TABLE count_100_R_2_y;
+DROP TABLE count_100_R_1_y;
+DROP TABLE query_100_;
+CREATE TEMP TABLE count_110_R_2_z AS (SELECT R_2.col0 as y, COUNT(DISTINCT R_2.col1) as cnt_z FROM R_2    GROUP BY  R_2.col0 );
+CREATE TEMP TABLE count_110_R_3_z AS (SELECT R_3.col1 as x, COUNT(DISTINCT R_3.col0) as cnt_z FROM R_3    GROUP BY  R_3.col1 );
+CREATE TEMP TABLE best_110_ as WITH 
+best_110_R_2_z as (SELECT query_110_.x as x, query_110_.y as y, 5 as posi_tag, count_110_R_2_z.cnt_z as cnt_tag FROM query_110_, count_110_R_2_z WHERE query_110_.y = count_110_R_2_z.y ) 
+best_110_R_3_z AS ( SELECT best_110_R_2_z.x as x, best_110_R_2_z.y as y, CASE WHEN best_110_R_2_z.cnt_tag < count_110_R_3_z.cnt_z THEN best_110_R_2_z.posi_tag ELSE 8 END as posi_tag, CASE WHEN best_110_R_2_z.cnt_tag < count_110_R_3_z.cnt_z THEN best_110_R_2_z.cnt_tag ELSE count_110_R_3_z.cnt_z END as cnt_tag FROM best_110_R_2_z, count_110_R_3_z WHERE best_110_R_2_z.x = count_110_R_3_z.x ) 
+SELECT best_110_R_3_z.x as x, best_110_R_3_z.y as y, best_110_R_3_z.posi_tag as posi_tag FROM best_110_R_3_z
+;
+DROP TABLE count_110_R_3_z;
+DROP TABLE count_110_R_2_z;
+CREATE TEMP TABLE query_111_ AS (
+SELECT best_111_.x as x, best_111_.y as y, R_2.col1 as z FROM best_111_ JOIN R_2 ON ( R_2.col0 = best_111_.y AND best_111_.posi_tag = 5 ) 
+ UNION ALL 
+SELECT best_111_.x as x, best_111_.y as y, R_3.col0 as z FROM best_111_ JOIN R_3 ON ( R_3.col1 = best_111_.x AND best_111_.posi_tag = 8 )  SEMI JOIN R_2 ON R_2.col0 = best_111_.y AND R_2.col1 = R_3.col0);
+SELECT * FROM query_111_;
