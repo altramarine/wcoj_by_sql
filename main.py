@@ -438,7 +438,7 @@ def main():
   
   out = open(default_dir, "w") if default_dir else sys.stdout
   try:
-    print(f"CREATE TEMP TABLE __query__result__ AS SELECT {", ".join(head)} FROM {", ".join(select)} WHERE {" and ".join(equ)}", file = out)
+    print(f"CREATE TEMP TABLE __query__result__ AS SELECT {", ".join(head)} FROM {", ".join(select)} WHERE {" and ".join(equ)};", file = out)
   finally:
     if default_dir:
       out.close()

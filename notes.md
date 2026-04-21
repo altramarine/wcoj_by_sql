@@ -39,3 +39,12 @@ wcoj    : len(prop_3) = 13627736762
 q3: 
 wcoj_var: len(prop_1111) = 10267520216
 wcoj    : len(prop_3) = 12736152112
+
+
+NOW: muti-threading optimization is bad. when threads=20 we have quite good performance
+
+两个 RIGHT_SEMI JOIN 合计占了 82s CPU（80%），且 operator_cardinality 分别是 1498万和 1270万行，但它们的 build side 是通过 INNER JOIN 膨胀出来的 2.4亿/2.86亿行中间结果。
+
+这正是之前看到的问题：build side 选错了，大表做 build，小表做 probe，hash table 巨大导致 cache miss 严重。
+
+UNION 两个分支是串行的（operator_timing: 0.00s 但 cpu_time 85s），说明它们没有并行，是顺序执行的。

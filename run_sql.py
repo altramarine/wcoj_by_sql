@@ -37,7 +37,7 @@ def run_sql_file(path: str, con=None):
                 rows = result.fetchall()
                 print('\t'.join(cols))
                 print('-' * (len('\t'.join(cols)) + 8))
-                for row in rows:
+                for row in rows[0:1]:
                     print('\t'.join(str(v) for v in row))
                 print(f"({len(rows)} rows)")
         except Exception as e:
@@ -45,10 +45,20 @@ def run_sql_file(path: str, con=None):
             raise
 
 if __name__ == "__main__":
-    con = duckdb.connect(config={"temp_directory": "", "max_memory": "256GB"})
-    con.execute("CREATE TABLE skitter AS SELECT * FROM read_csv_auto('./datasets/as-skitter.csv')")
+    import pathlib
+    con = duckdb.connect(config={"temp_directory": "", "max_memory": "220GB"})
+    
+    con.execute("CREATE TABLE graph AS SELECT * FROM read_csv_auto('./datasets/as-skitter.csv');")
+    # con.execute("CREATE TABLE graph AS SELECT * FROM read_csv_auto('./datasets/wiki-topcats.csv');")
+    con.execute("SET THREADS=32;")
+    con.execute("CREATE TEMP TABLE R AS SELECT * FROM graph;")
 
-    con.execute("CREATE TEMP TABLE R AS SELECT * FROM skitter")
+    # profile_dir = pathlib.Path("./tmp/profiles")
+    # profile_dir.mkdir(parents=True, exist_ok=True)
+    # sql_name = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "1.sql").stem
+    # profile_path = profile_dir / f"{sql_name}.json"
+    # con.execute(f"PRAGMA enable_profiling='json'")
+    # con.execute(f"PRAGMA profile_output='{profile_path}'")
 
     print("TEMP IS CREATED")
 
