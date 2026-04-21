@@ -37,7 +37,7 @@ class CQ_to_SQL_Holder:
     # self.queries.append(f"CREATE TEMP TABLE __result__ AS WITH")
     for q in prev.queries:
       self.queries.append(f"{q}")
-    self.queries = self.queries[:-1]
+    # self.queries = self.queries[:-1]
     # self.queries.append(f"SELECT * FROM {prev.query_name};")
     # self._drop_unused_tables()
 
@@ -400,6 +400,9 @@ def CQ_to_SQL(cq_: CQ):
       
       s = (f"{query_name} AS (" + '\n')
 
+      if (bitmap | (1 << var_id[var_this_round])) == (1 << (n)) - 1:
+        s = (f"{query_name} AS SELECT {'+'.join(f'SUM({v})' for v in variable_list)} FROM (" + '\n')
+
       atom_list = []
       for atom in cq.atoms:
         flag = 0
@@ -478,7 +481,7 @@ def main():
   
   out = open(default_dir, "w") if default_dir else sys.stdout
   try:
-    print(f"CREATE TEMP TABLE __query__result__ AS SELECT {", ".join(head)} FROM {", ".join(select)} WHERE {" and ".join(equ)};", file = out)
+    print(f"CREATE TEMP TABLE __query__result__ AS SELECT {"+".join(f"SUM({v})" for v in CQ.atom_vars)} FROM (SELECT {", ".join(head)} FROM {", ".join(select)} WHERE {" and ".join(equ)});", file = out)
   finally:
     if default_dir:
       out.close()
