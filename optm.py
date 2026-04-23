@@ -267,8 +267,8 @@ def Get_Query_1(atoms: list[Atom], cur_var: str) -> str:
 
 def CQ_to_SQL(cq_: CQ): 
   variable_list = sorted(cq_.atom_vars)
-
-  print(variable_list)
+  # variable_list = ['a', 'b', 'c', 'd']
+  # print(variable_list)
 
   initial = variable_list[0];
 
@@ -311,14 +311,21 @@ def CQ_to_SQL(cq_: CQ):
   #     bitmap_order.append(bitmap)
   # bitmap_order.sort(key = lambda x : x.bit_count() )
   # print(bitmap_order)
+
+  # variable_list = ['a', 'b', 'c']
+  # target = 1 + 4 + 8
+  target = (1 << n) - 1
   while(True):
     cq = cq_
     
-    if bitmap == (1 << (n)) - 1:
+    if bitmap == target:
       break
     
 
     active_vars = [variable_list[i] for i in range(0, n) if (bitmap >> i & 1)]
+
+    
+
     print(active_vars)
     non_active_vars = [var for var in variable_list if var not in active_vars]
 
@@ -331,6 +338,11 @@ def CQ_to_SQL(cq_: CQ):
     S_best = f"{best_tag} as WITH \n";
 
     var_this_round = non_active_vars[0];
+    idx = 0
+    while( ((1 << var_id[var_this_round]) & target) == 0):
+      idx = idx + 1
+      var_this_round = non_active_vars[idx]
+
     print(var_this_round)
     for atom in cq.atoms:
       # for var_this_round in atom.var_list:

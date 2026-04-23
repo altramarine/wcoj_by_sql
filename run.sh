@@ -1,23 +1,27 @@
 
+trap 'echo "Interrupted, killing all child processes..."; kill 0; exit 1' INT TERM
+
 uv sync
 
 mkdir -p log
 mkdir -p tmp
 
-for qfile in 3.sql ; do
+for dataset in gplus; do
 
-result_file="./results/${qfile}.result.txt"
+mkdir -p log/${dataset}
+mkdir -p results/${dataset}
 
-# uv run python variation.py tmp/wcoj_var.sql tmp/default.sql < queries/${qfile}
-# uv run python optm.py tmp/wcoj.sql tmp/default.sql < queries/${qfile}
+for qfile in 1-var.sql; do
 
-uv run python run_sql.py tmp/wcoj.sql > log/wcoj.txt
-grep "Execution time:" log/wcoj.txt | sed 's/Execution time:/wcoj Execution time:/' >> ${result_file}
+result_file="./results/${dataset}/${qfile}.result.txt"
 
-uv run python run_sql.py tmp/default.sql > log/default.txt
-grep "Execution time:" log/default.txt | sed 's/Execution time:/default Execution time:/' >> ${result_file}
+uv run python optm.py tmp/wcoj.sql tmp/default.sql < queries/${qfile}
 
-# uv run python run_sql.py tmp/wcoj_var.sql > log/wcoj_var.txt
-# grep "Execution time:" log/wcoj_var.txt | sed 's/Execution time:/variation Execution time:/' >> ${result_file}
+uv run python run_sql.py tmp/wcoj.sql -d ${dataset} > log/${dataset}/wcoj_${qfile}.txt
+grep "Execution time:" log/${dataset}/wcoj_${qfile}.txt | sed 's/Execution time:/wcoj Execution time:/' >> ${result_file}
 
+uv run python run_sql.py tmp/default.sql -d ${dataset} > log/${dataset}/default_${qfile}.txt
+grep "Execution time:" log/${dataset}/default_${qfile}.txt | sed 's/Execution time:/default Execution time:/' >> ${result_file}
+
+done
 done

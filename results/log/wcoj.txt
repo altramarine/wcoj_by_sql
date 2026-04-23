@@ -1,0 +1,253 @@
+--- Executing ---
+CREATE VIEW R_1 AS SELECT * FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE VIEW R_2 AS SELECT * FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE VIEW R_3 AS SELECT * FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE VIEW R_4 AS SELECT * FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE query_1000_ AS (SELECT R_1.col0 as a FROM R_1 SEMI JOIN R_4 ON R_4.col0 = R_1.col0 GROUP BY a)
+
+duration=: 0.203s
+Count
+-------------
+1791489
+(1 rows)
+--- Executing ---
+CREATE TEMP TABLE best_1000_ as WITH
+count_1000_R_1_b AS (SELECT R_1.col0 as a, COUNT(DISTINCT R_1.col1) as cnt_b FROM R_1    GROUP BY  R_1.col0 ),
+best_1000_R_1_b as (SELECT query_1000_.a as a, 1 as 
+
+duration=: 0.304s
+Count
+-------------
+1791489
+(1 rows)
+--- Executing ---
+DROP TABLE query_1000_
+
+duration=: 0.001s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE query_1100_ AS (
+SELECT best_1000_.a as a, R_1.col1 as b FROM best_1000_ JOIN R_1 ON ( R_1.col0 = best_1000_.a AND best_1000_.posi_tag = 1 )  SEMI JOIN R_2 ON R_2.col0 = R_1.col1
+ UN
+
+duration=: 0.544s
+Count
+-------------
+28511807
+(1 rows)
+--- Executing ---
+DROP TABLE best_1000_
+
+duration=: 0.002s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE best_1100_ as WITH
+count_1100_R_2_c AS (SELECT R_2.col0 as b, COUNT(DISTINCT R_2.col1) as cnt_c FROM R_2    GROUP BY  R_2.col0 ),
+best_1100_R_2_c as (SELECT query_1100_.a as a, query
+
+duration=: 0.277s
+Count
+-------------
+28511807
+(1 rows)
+--- Executing ---
+DROP TABLE query_1100_
+
+duration=: 0.004s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE query_1110_ AS (
+SELECT best_1100_.a as a, best_1100_.b as b, R_2.col1 as c FROM best_1100_ JOIN R_2 ON ( R_2.col0 = best_1100_.b AND best_1100_.posi_tag = 6 )  SEMI JOIN R_3 ON R_3.
+
+duration=: 12.827s
+Count
+-------------
+2662974839
+(1 rows)
+--- Executing ---
+DROP TABLE best_1100_
+
+duration=: 0.006s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE best_1110_ as WITH
+count_1110_R_3_d AS (SELECT R_3.col0 as c, COUNT(DISTINCT R_3.col1) as cnt_d FROM R_3    GROUP BY  R_3.col0 ),
+best_1110_R_3_d as (SELECT query_1110_.a as a, query
+
+duration=: 13.558s
+Count
+-------------
+2662974839
+(1 rows)
+--- Executing ---
+DROP TABLE query_1110_
+
+duration=: 1.761s
+Success
+---------------
+(0 rows)
+--- Executing ---
+EXPLAIN ANALYZE CREATE TEMP TABLE query_1111_ AS SELECT SUM(a)+SUM(b)+SUM(c)+SUM(d) FROM (
+SELECT best_1110_.a as a, best_1110_.b as b, best_1110_.c as c, R_3.col1 as d FROM best_1110_ JOIN R_3 ON ( R
+
+duration=: 131.652s
+explain_key	explain_value
+---------------------------------
+analyzed_plan	┌─────────────────────────────────────┐
+│┌───────────────────────────────────┐│
+││    Query Profiling Information    ││
+│└───────────────────────────────────┘│
+└─────────────────────────────────────┘
+EXPLAIN ANALYZE CREATE TEMP TABLE query_1111_ AS SELECT SUM(a)+SUM(b)+SUM(c)+SUM(d) FROM ( SELECT best_1110_.a as a, best_1110_.b as b, best_1110_.c as c, R_3.col1 as d FROM best_1110_ JOIN R_3 ON ( R_3.col0 = best_1110_.c AND best_1110_.posi_tag = 11 )  SEMI JOIN R_4 ON R_4.col0 = best_1110_.a AND R_4.col1 = R_3.col1  UNION ALL SELECT best_1110_.a as a, best_1110_.b as b, best_1110_.c as c, R_4.col1 as d FROM best_1110_ JOIN R_4 ON ( R_4.col0 = best_1110_.a AND best_1110_.posi_tag = 15 )  SEMI JOIN R_3 ON R_3.col0 = best_1110_.c AND R_3.col1 = R_4.col1)
+┌────────────────────────────────────────────────┐
+│┌──────────────────────────────────────────────┐│
+││              Total Time: 131.65s             ││
+│└──────────────────────────────────────────────┘│
+└────────────────────────────────────────────────┘
+┌───────────────────────────┐
+│           QUERY           │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│      EXPLAIN_ANALYZE      │
+│    ────────────────────   │
+│           0 Rows          │
+│          (0.00s)          │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│      CREATE_TABLE_AS      │
+│    ────────────────────   │
+│           1 Rows          │
+│          (0.00s)          │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│         PROJECTION        │
+│    ────────────────────   │
+│ (((sum(a) + sum(b)) + sum │
+│       (c)) + sum(d))      │
+│                           │
+│           1 Rows          │
+│          (0.00s)          │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│    UNGROUPED_AGGREGATE    │
+│    ────────────────────   │
+│        Aggregates:        │
+│          sum(#0)          │
+│          sum(#1)          │
+│          sum(#2)          │
+│          sum(#3)          │
+│                           │
+│           1 Rows          │
+│          (77.64s)         │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│         PROJECTION        │
+│    ────────────────────   │
+│             a             │
+│             b             │
+│             c             │
+│             d             │
+│                           │
+│      4670767160 Rows      │
+│          (15.36s)         │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│           UNION           │
+│    ────────────────────   │
+│           0 Rows          ├────────────────────────────────────────────────────────────────────────┐
+│          (0.00s)          │                                                                        │
+└─────────────┬─────────────┘                                                                        │
+┌─────────────┴─────────────┐                                                          ┌─────────────┴─────────────┐
+│         PROJECTION        │                                                          │         PROJECTION        │
+│    ────────────────────   │                                                          │    ────────────────────   │
+│             a             │                                                          │             a             │
+│             b             │                                                          │             b             │
+│             c             │                                                          │             c             │
+│             d             │                                                          │             d             │
+│                           │                                                          │                           │
+│      1638603369 Rows      │                                                          │      3032163791 Rows      │
+│          (4.80s)          │                                                          │          (9.35s)          │
+└─────────────┬─────────────┘                                                          └─────────────┬─────────────┘
+┌─────────────┴─────────────┐                                                          ┌─────────────┴─────────────┐
+│         HASH_JOIN         │                                                          │         HASH_JOIN         │
+│    ────────────────────   │                                                          │    ────────────────────   │
+│      Join Type: SEMI      │                                                          │      Join Type: SEMI      │
+│                           │                                                          │                           │
+│        Conditions:        │                                                          │        Conditions:        │
+│          a = col0         ├───────────────────────────────────────────┐              │          c = col0         ├───────────────────────────────────────────┐
+│        col1 = col1        │                                           │              │        col1 = col1        │                                           │
+│                           │                                           │              │                           │                                           │
+│      1638603369 Rows      │                                           │              │      3032163791 Rows      │                                           │
+│         (1235.50s)        │                                           │              │         (1972.62s)        │                                           │
+└─────────────┬─────────────┘                                           │              └─────────────┬─────────────┘                                           │
+┌─────────────┴─────────────┐                             ┌─────────────┴─────────────┐┌─────────────┴─────────────┐                             ┌─────────────┴─────────────┐
+│         HASH_JOIN         │                             │         TABLE_SCAN        ││         HASH_JOIN         │                             │         TABLE_SCAN        │
+│    ────────────────────   │                             │    ────────────────────   ││    ────────────────────   │                             │    ────────────────────   │
+│      Join Type: INNER     │                             │          Table: R         ││      Join Type: INNER     │                             │          Table: R         │
+│    Conditions: c = col0   │                             │   Type: Sequential Scan   ││    Conditions: a = col0   │                             │   Type: Sequential Scan   │
+│                           │                             │                           ││                           │                             │                           │
+│                           ├──────────────┐              │        Projections:       ││                           ├──────────────┐              │        Projections:       │
+│                           │              │              │            col0           ││                           │              │              │            col0           │
+│                           │              │              │            col1           ││                           │              │              │            col1           │
+│                           │              │              │                           ││                           │              │              │                           │
+│      28055172502 Rows     │              │              │       28511807 Rows       ││      45919510823 Rows     │              │              │       28511807 Rows       │
+│         (466.04s)         │              │              │          (0.03s)          ││         (306.18s)         │              │              │          (0.16s)          │
+└─────────────┬─────────────┘              │              └───────────────────────────┘└─────────────┬─────────────┘              │              └───────────────────────────┘
+┌─────────────┴─────────────┐┌─────────────┴─────────────┐                             ┌─────────────┴─────────────┐┌─────────────┴─────────────┐
+│         TABLE_SCAN        ││         TABLE_SCAN        │                             │         TABLE_SCAN        ││         TABLE_SCAN        │
+│    ────────────────────   ││    ────────────────────   │                             │    ────────────────────   ││    ────────────────────   │
+│     Table: best_1110_     ││          Table: R         │                             │     Table: best_1110_     ││          Table: R         │
+│   Type: Sequential Scan   ││   Type: Sequential Scan   │                             │   Type: Sequential Scan   ││   Type: Sequential Scan   │
+│                           ││                           │                             │                           ││                           │
+│        Projections:       ││        Projections:       │                             │        Projections:       ││        Projections:       │
+│             c             ││            col0           │                             │             a             ││            col0           │
+│             a             ││            col1           │                             │             c             ││            col1           │
+│             b             ││                           │                             │             b             ││                           │
+│                           ││                           │                             │                           ││                           │
+│    Filters: posi_tag=11   ││                           │                             │    Filters: posi_tag=15   ││                           │
+│                           ││                           │                             │                           ││                           │
+│       839496902 Rows      ││       28511807 Rows       │                             │      1823477937 Rows      ││       28511807 Rows       │
+│          (14.50s)         ││          (0.03s)          │                             │          (21.70s)         ││          (0.02s)          │
+└───────────────────────────┘└───────────────────────────┘                             └───────────────────────────┘└───────────────────────────┘
+
+(1 rows)
+--- Executing ---
+DROP TABLE best_1110_
+
+duration=: 6.479s
+Success
+---------------
+(0 rows)
+Execution time: 167.617s

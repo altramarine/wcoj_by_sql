@@ -1,0 +1,138 @@
+Loading dataset: skitters (./datasets/as-skitter.csv)
+--- Executing ---
+CREATE VIEW R_1 AS SELECT * FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE VIEW R_2 AS SELECT * FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE VIEW R_3 AS SELECT * FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE VIEW R_4 AS SELECT * FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE query_1000_ AS (SELECT R_1.col0 as a FROM R_1 SEMI JOIN R_4 ON R_4.col0 = R_1.col0 GROUP BY a)
+
+duration=: 0.094s
+Count
+-------------
+966723
+(1 rows)
+--- Executing ---
+CREATE TEMP TABLE best_1000_ as WITH
+count_1000_R_1_b AS (SELECT R_1.col0 as a, COUNT(DISTINCT R_1.col1) as cnt_b FROM R_1    GROUP BY  R_1.col0 ),
+best_1000_R_1_b as (SELECT query_1000_.a as a, 1 as 
+
+duration=: 0.176s
+Count
+-------------
+966723
+(1 rows)
+--- Executing ---
+DROP TABLE query_1000_
+
+duration=: 0.000s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE query_1100_ AS (
+SELECT best_1000_.a as a, R_1.col1 as b FROM best_1000_ JOIN R_1 ON ( R_1.col0 = best_1000_.a AND best_1000_.posi_tag = 1 )  SEMI JOIN R_2 ON R_2.col0 = R_1.col1
+ UN
+
+duration=: 0.193s
+Count
+-------------
+8722634
+(1 rows)
+--- Executing ---
+DROP TABLE best_1000_
+
+duration=: 0.000s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE best_1100_ as WITH
+count_1100_R_2_c AS (SELECT R_2.col0 as b, COUNT(DISTINCT R_2.col1) as cnt_c FROM R_2    GROUP BY  R_2.col0 ),
+best_1100_R_2_c as (SELECT query_1100_.a as a, query
+
+duration=: 0.144s
+Count
+-------------
+8722634
+(1 rows)
+--- Executing ---
+DROP TABLE query_1100_
+
+duration=: 0.003s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE query_1110_ AS (
+SELECT best_1100_.a as a, best_1100_.b as b, R_2.col1 as c FROM best_1100_ JOIN R_2 ON ( R_2.col0 = best_1100_.b AND best_1100_.posi_tag = 6 )  SEMI JOIN R_3 ON R_3.
+
+duration=: 1.074s
+Count
+-------------
+376544424
+(1 rows)
+--- Executing ---
+DROP TABLE best_1100_
+
+duration=: 0.004s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE best_1110_ as WITH
+count_1110_R_3_d AS (SELECT R_3.col0 as c, COUNT(DISTINCT R_3.col1) as cnt_d FROM R_3    GROUP BY  R_3.col0 ),
+best_1110_R_3_d as (SELECT query_1110_.a as a, query
+
+duration=: 1.508s
+Count
+-------------
+376544424
+(1 rows)
+--- Executing ---
+DROP TABLE query_1110_
+
+duration=: 0.041s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE query_1111_ AS SELECT SUM(a)+SUM(b)+SUM(c)+SUM(d) FROM (
+SELECT best_1110_.a as a, best_1110_.b as b, best_1110_.c as c, R_3.col1 as d FROM best_1110_ JOIN R_3 ON ( R_3.col0 = best_1
+
+duration=: 15.915s
+Count
+-------------
+1
+(1 rows)
+--- Executing ---
+DROP TABLE best_1110_
+
+duration=: 0.068s
+Success
+---------------
+(0 rows)
+Execution time: 19.222s

@@ -1,0 +1,98 @@
+Loading dataset: topcats (./datasets/wiki-topcats.csv)
+--- Executing ---
+CREATE VIEW R_1 AS SELECT * FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE VIEW R_2 AS SELECT * FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE VIEW R_3 AS SELECT * FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE query_100_ AS (SELECT R_1.col0 as x FROM R_1 SEMI JOIN R_3 ON R_3.col1 = R_1.col0 GROUP BY x)
+
+duration=: 0.214s
+Count
+-------------
+1791489
+(1 rows)
+--- Executing ---
+CREATE TEMP TABLE best_100_ as WITH
+count_100_R_1_y AS (SELECT R_1.col0 as x, COUNT(DISTINCT R_1.col1) as cnt_y FROM R_1    GROUP BY  R_1.col0 ),
+best_100_R_1_y as (SELECT query_100_.x as x, 1 as posi
+
+duration=: 0.300s
+Count
+-------------
+1791489
+(1 rows)
+--- Executing ---
+DROP TABLE query_100_
+
+duration=: 0.001s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE query_110_ AS (
+SELECT best_100_.x as x, R_1.col1 as y FROM best_100_ JOIN R_1 ON ( R_1.col0 = best_100_.x AND best_100_.posi_tag = 1 )  SEMI JOIN R_2 ON R_2.col0 = R_1.col1
+ UNION A
+
+duration=: 0.517s
+Count
+-------------
+28511807
+(1 rows)
+--- Executing ---
+DROP TABLE best_100_
+
+duration=: 0.002s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE best_110_ as WITH
+count_110_R_2_z AS (SELECT R_2.col0 as y, COUNT(DISTINCT R_2.col1) as cnt_z FROM R_2    GROUP BY  R_2.col0 ),
+best_110_R_2_z as (SELECT query_110_.x as x, query_110
+
+duration=: 0.513s
+Count
+-------------
+28511807
+(1 rows)
+--- Executing ---
+DROP TABLE query_110_
+
+duration=: 0.006s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE query_111_ AS SELECT SUM(x)+SUM(y)+SUM(z) FROM (
+SELECT best_110_.x as x, best_110_.y as y, R_2.col1 as z FROM best_110_ JOIN R_2 ON ( R_2.col0 = best_110_.y AND best_110_.posi_tag =
+
+duration=: 1.987s
+Count
+-------------
+1
+(1 rows)
+--- Executing ---
+DROP TABLE best_110_
+
+duration=: 0.007s
+Success
+---------------
+(0 rows)
+Execution time: 3.546s

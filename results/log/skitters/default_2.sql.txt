@@ -1,0 +1,10 @@
+Loading dataset: skitters (./datasets/as-skitter.csv)
+--- Executing ---
+CREATE TEMP TABLE __query__result__ AS SELECT SUM(a)+SUM(b)+SUM(c)+SUM(d) FROM (SELECT R_1.col0 as a, R_1.col1 as b, R_2.col1 as c, R_3.col1 as d FROM R as R_1, R as R_2, R as R_3, R as R_4 WHERE R_1.
+
+duration=: 9.287s
+Count
+-------------
+1
+(1 rows)
+Execution time: 9.287s

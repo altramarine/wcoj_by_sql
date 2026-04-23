@@ -1,5 +1,6 @@
 import duckdb
 import sys
+import time
 
 def run_sql_file(path: str, con=None):
     import re
@@ -46,39 +47,33 @@ def run_sql_file(path: str, con=None):
                     print('\t'.join(str(v) for v in row))
                 print(f"({len(rows)} rows)")
         except Exception as e:
-            print(f"Error executing:\n{stmt[:120]}...\n{e}", file=sys.stderr)
+            print(f"Error executing:\n{stmt[:120]}...\n{e}")
             raise
     print(f"Execution time: {tm:.3f}s")
 
+DATASETS = {
+    "skitters":  "./datasets/as-skitter.csv",
+    "topcats":   "./datasets/wiki-topcats.csv",
+    "gplus":     "./datasets/gplus.csv",
+    "uspatent":  "./datasets/cit-Patents.csv",
+}
+
 if __name__ == "__main__":
-    import pathlib
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("sql", nargs="?", default="1.sql", help="SQL file to run")
+    parser.add_argument("--dataset", "-d", default="skitters",
+                        choices=list(DATASETS), help="Dataset to load (default: skitters)")
+    args = parser.parse_args()
+
+    dataset_path = DATASETS[args.dataset]
+    print(f"Loading dataset: {args.dataset} ({dataset_path})")
+
     con = duckdb.connect(config={"temp_directory": "", "max_memory": "220GB"})
-    
-    con.execute("CREATE TABLE graph AS SELECT * FROM read_csv_auto('./datasets/as-skitter.csv');")
-    # con.execute("CREATE TABLE graph AS SELECT * FROM read_csv_auto('./datasets/wiki-topcats.csv');")
-    con.execute("SET THREADS=32;");
-    con.execute("CREATE TEMP TABLE R AS SELECT * FROM graph GROUP BY col0, col1;");
+    con.execute(f"CREATE TABLE graph AS SELECT * FROM read_csv_auto('{dataset_path}');")
+    con.execute("SET THREADS=32;")
+    con.execute("CREATE TEMP TABLE R AS SELECT * FROM graph;")
     con.execute("DROP TABLE graph;")
-    # profile_dir = pathlib.Path("./tmp/profiles")
-    # profile_dir.mkdir(parents=True, exist_ok=True)
-    # sql_name = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "1.sql").stem
-    # profile_path = profile_dir / f"{sql_name}.json"
-    # con.execute(f"PRAGMA enable_profiling='json'")
-    # con.execute(f"PRAGMA profile_output='{profile_path}'")
 
-    # result = con.execute("SELECT COUNT(*) FROM R;")
-    # # Print results for SELECT statements
-    # if result.description:
-    #     cols = [d[0] for d in result.description]
-    #     rows = result.fetchall()
-    #     print('\t'.join(cols))
-    #     print('-' * (len('\t'.join(cols)) + 8))
-    #     for row in rows[0:1]:
-    #         print('\t'.join(str(v) for v in row))
-    #     print(f"({len(rows)} rows)")
-    # print("TEMP IS CREATED")
-
-    import time
-    path = sys.argv[1] if len(sys.argv) > 1 else "1.sql"
-    run_sql_file(path, con)
+    run_sql_file(args.sql, con)
     

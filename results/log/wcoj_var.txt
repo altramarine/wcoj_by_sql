@@ -1,0 +1,29 @@
+TEMP IS CREATED
+--- Executing ---
+CREATE VIEW R_1 AS SELECT * FROM R
+
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE VIEW R_2 AS SELECT * FROM R
+
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE VIEW R_3 AS SELECT * FROM R
+
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE __result__ AS WITH
+query_100_ AS (SELECT R_1.col0 as x FROM R_1 SEMI JOIN R_3 ON R_3.col1 = R_1.col0 GROUP BY x),
+count_100_R_1_y AS (SELECT R_1.col0 as x, COUNT(DISTINCT R_1.col1) a
+
+Count
+-------------
+27691482
+(1 rows)
+Execution time: 6.382s

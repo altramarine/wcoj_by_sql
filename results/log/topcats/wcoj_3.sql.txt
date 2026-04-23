@@ -1,0 +1,138 @@
+Loading dataset: topcats (./datasets/wiki-topcats.csv)
+--- Executing ---
+CREATE VIEW R_1 AS SELECT * FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE VIEW R_2 AS SELECT * FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE VIEW R_3 AS SELECT * FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE VIEW R_4 AS SELECT * FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE query_1000_ AS (SELECT R_2.col0 as a FROM R_2 SEMI JOIN R_3 ON R_3.col0 = R_2.col0 GROUP BY a)
+
+duration=: 0.201s
+Count
+-------------
+1791489
+(1 rows)
+--- Executing ---
+CREATE TEMP TABLE best_1000_ as WITH
+count_1000_R_3_b AS (SELECT R_3.col0 as a, COUNT(DISTINCT R_3.col1) as cnt_b FROM R_3    GROUP BY  R_3.col0 ),
+best_1000_R_3_b as (SELECT query_1000_.a as a, 9 as 
+
+duration=: 0.325s
+Count
+-------------
+1791489
+(1 rows)
+--- Executing ---
+DROP TABLE query_1000_
+
+duration=: 0.001s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE query_1100_ AS (
+SELECT best_1000_.a as a, R_3.col1 as b FROM best_1000_ JOIN R_3 ON ( R_3.col0 = best_1000_.a AND best_1000_.posi_tag = 9 )  SEMI JOIN R_4 ON R_4.col0 = R_3.col1
+ UN
+
+duration=: 0.480s
+Count
+-------------
+28511807
+(1 rows)
+--- Executing ---
+DROP TABLE best_1000_
+
+duration=: 0.001s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE best_1100_ as WITH
+count_1100_R_1_c AS (SELECT COUNT(DISTINCT R_1.col0) as cnt_c FROM R_1      ),
+best_1100_R_1_c as (SELECT query_1100_.a as a, query_1100_.b as b, 2 as posi_tag, co
+
+duration=: 0.282s
+Count
+-------------
+28511807
+(1 rows)
+--- Executing ---
+DROP TABLE query_1100_
+
+duration=: 0.008s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE query_1110_ AS (
+SELECT best_1100_.a as a, best_1100_.b as b, R_1.col0 as c FROM best_1100_ JOIN R_1 ON ( best_1100_.posi_tag = 2 )  SEMI JOIN R_4 ON R_4.col0 = best_1100_.b AND R_4.
+
+duration=: 13.137s
+Count
+-------------
+2662974839
+(1 rows)
+--- Executing ---
+DROP TABLE best_1100_
+
+duration=: 0.006s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE best_1110_ as WITH
+count_1110_R_1_d AS (SELECT R_1.col0 as c, COUNT(DISTINCT R_1.col1) as cnt_d FROM R_1    GROUP BY  R_1.col0 ),
+best_1110_R_1_d as (SELECT query_1110_.a as a, query
+
+duration=: 14.183s
+Count
+-------------
+2662974839
+(1 rows)
+--- Executing ---
+DROP TABLE query_1110_
+
+duration=: 2.122s
+Success
+---------------
+(0 rows)
+--- Executing ---
+CREATE TEMP TABLE query_1111_ AS SELECT SUM(a)+SUM(b)+SUM(c)+SUM(d) FROM (
+SELECT best_1110_.a as a, best_1110_.b as b, best_1110_.c as c, R_1.col1 as d FROM best_1110_ JOIN R_1 ON ( R_1.col0 = best_1
+
+duration=: 131.652s
+Count
+-------------
+1
+(1 rows)
+--- Executing ---
+DROP TABLE best_1110_
+
+duration=: 6.236s
+Success
+---------------
+(0 rows)
+Execution time: 168.633s
