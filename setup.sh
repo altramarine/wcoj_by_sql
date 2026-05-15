@@ -1,3 +1,8 @@
+sudo mkdir -p /data
+echo '/dev/nvme0n1 /data ext4 defaults 0 0' | sudo tee -a /etc/fstab
+sudo mount /data
+sudo chmod 777 /data
+
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 curl -LsSf https://astral.sh/uv/install.sh | sh

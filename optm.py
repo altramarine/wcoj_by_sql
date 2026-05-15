@@ -215,15 +215,24 @@ def PropAndGetQuery(atom: Atom, cur_var: str, best_table: str, extra_where_args:
     print(f"Prop() ERROR !!!!! [{cur_var} not in var_map for atom = {atom.table}] CHECK IMPLEMENTATION")
     return 
   atom_ = atom
+  # where_in_s = []
   for atom in atoms:
     if atom != atom_:
+      equi_left = []
+      equi_right = []
       equi = []
       for (i, var) in enumerate(atom.var_list):
         if var in cq_vars or var == cur_var:
           equi.append(f"{Name_of_column(atom.table, i)} = {var_mappings2[var]}")
+          # equi_left.append(f"{var_mappings2[var]}")
+          # equi_right.append(f"{Name_of_column(atom.table, i)}")
       if len(equi):
-        s = s + f""" SEMI JOIN {atom.table} ON {' AND '.join(equi)}"""
+        s = s + f"SEMI JOIN {atom.table} ON {' AND '.join(equi)}"
+        # where_in_s.append(f"({", ".join(equi_left)}) IN (SELECT {", ".join(equi_right)} FROM {atom.table})")
+  # if len(where_in_s) > 0:
+  # s = s + f""" WHERE {' AND '.join(where_in_s)}"""
   return s
+
 
 def Get_Query_j(atoms: list[Atom], prop_table: str, newcq_vars: list[str]) -> str:
   # equi = []
@@ -247,7 +256,7 @@ def Get_Query_j(atoms: list[Atom], prop_table: str, newcq_vars: list[str]) -> st
 def Get_Query_1(atoms: list[Atom], cur_var: str) -> str:
   equi = []
   var_map = []
-
+  where_in_s = []
   var_mappings = {}
   s = """"""
   for atom in atoms:
@@ -255,13 +264,18 @@ def Get_Query_1(atoms: list[Atom], cur_var: str) -> str:
       if(var == cur_var):
         if var in var_mappings:
           equi.append(f"{Name_of_column(atom.table, i)} = {var_mappings[var]}")
-          s = s + f" SEMI JOIN {atom.table} ON {Name_of_column(atom.table, i)} = {var_mappings[var]}"
+          # where_in_s.append(f"({var_mappings[var]}) IN (SELECT {Name_of_column(atom.table, i)} FROM {atom.table})")
+          s = s + f" INTERSECT SELECT {Name_of_column(atom.table, i)} as {var} FROM {atom.table}"
+          # s = s + f" SEMI JOIN {atom.table} ON {Name_of_column(atom.table, i)} = {var_mappings[var]}"
         else:
-          s = f"SELECT {Name_of_column(atom.table, i)} as {var} FROM {atom.table}" + s
+          # s = f"SELECT {Name_of_column(atom.table, i)} as {var} FROM {atom.table}" + s
+          s = f"SELECT {Name_of_column(atom.table, i)} as {var} FROM {atom.table} GROUP BY {cur_var}" + s
           var_mappings[var] = Name_of_column(atom.table, i)
           var_map.append(f"{Name_of_column(atom.table, i)} as {var}")
+  # if len(where_in_s) > 0:
+  #   s = s + f""" WHERE {' AND '.join(where_in_s)}"""
   # s = f"""SELECT {', '.join(var_map)} FROM {", ".join(atom.table for atom in atoms)} {'WHERE (' if len(equi) else ''} {' AND '.join(equi)} {')' if len(equi) else ''} GROUP BY {cur_var}"""
-  s = s + f""" GROUP BY {cur_var}"""
+  # s = s + f""" GROUP BY {cur_var}"""
 
   return s
 

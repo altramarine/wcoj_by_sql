@@ -3,25 +3,51 @@ trap 'echo "Interrupted, killing all child processes..."; kill 0; exit 1' INT TE
 
 uv sync
 
-mkdir -p log
-mkdir -p tmp
+mkdir -p tmp log-duckdb results-duckdb log-umbra results-umbra
 
-for dataset in gplus; do
+# require explicit backend: umbra or duckdb
+if [ -z "$1" ]; then
+  echo "Usage: $0 <umbra|duckdb>"
+  exit 1
+fi
+BACKEND="$1"
 
-mkdir -p log/${dataset}
-mkdir -p results/${dataset}
+if [ "$BACKEND" = "umbra" ] || [ "$BACKEND" = "--umbra" ]; then
+  LOG_DIR="log-umbra"
+  RESULT_DIR="results-umbra"
+else
+  LOG_DIR="log-duckdb"
+  RESULT_DIR="results-duckdb"
+fi
 
-for qfile in 1-var.sql; do
+for dataset in topcats skitters uspatent; do
 
-result_file="./results/${dataset}/${qfile}.result.txt"
+mkdir -p ${LOG_DIR}/${dataset}
+mkdir -p ${RESULT_DIR}/${dataset}
+
+for qfile in 1-var.sql 1.sql 2.sql 3.sql; do
+
+result_file="./${RESULT_DIR}/${dataset}/${qfile}.result.txt"
 
 uv run python optm.py tmp/wcoj.sql tmp/default.sql < queries/${qfile}
 
-uv run python run_sql.py tmp/wcoj.sql -d ${dataset} > log/${dataset}/wcoj_${qfile}.txt
-grep "Execution time:" log/${dataset}/wcoj_${qfile}.txt | sed 's/Execution time:/wcoj Execution time:/' >> ${result_file}
+if [ "$BACKEND" = "umbra" ]; then
 
-uv run python run_sql.py tmp/default.sql -d ${dataset} > log/${dataset}/default_${qfile}.txt
-grep "Execution time:" log/${dataset}/default_${qfile}.txt | sed 's/Execution time:/default Execution time:/' >> ${result_file}
+uv run python run_umbra.py tmp/wcoj.sql -d ${dataset} > ${LOG_DIR}/${dataset}/wcoj_${qfile}.txt
+grep "Execution time:" ${LOG_DIR}/${dataset}/wcoj_${qfile}.txt | sed 's/Execution time:/wcoj Execution time:/' >> ${result_file}
+
+uv run python run_umbra.py tmp/default.sql -d ${dataset} --wcoj > ${LOG_DIR}/${dataset}/default_${qfile}.txt
+grep "Execution time:" ${LOG_DIR}/${dataset}/default_${qfile}.txt | sed 's/Execution time:/default Execution time:/' >> ${result_file}
+
+else
+
+uv run python run_sql.py tmp/wcoj.sql -d ${dataset} > ${LOG_DIR}/${dataset}/wcoj_${qfile}.txt
+grep "Execution time:" ${LOG_DIR}/${dataset}/wcoj_${qfile}.txt | sed 's/Execution time:/wcoj Execution time:/' >> ${result_file}
+
+uv run python run_sql.py tmp/default.sql -d ${dataset} > ${LOG_DIR}/${dataset}/default_${qfile}.txt
+grep "Execution time:" ${LOG_DIR}/${dataset}/default_${qfile}.txt | sed 's/Execution time:/default Execution time:/' >> ${result_file}
+
+fi
 
 done
 done

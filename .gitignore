@@ -15,3 +15,5 @@ wheels/
 # runtime logs
 /tmp
 /log
+/log-duckdb
+/log-umbra
