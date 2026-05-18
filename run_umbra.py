@@ -60,13 +60,10 @@ def split_statements(path: str) -> list[str]:
 
 def build_statements(csv_path: str, sql_path: str) -> list[str]:
     abs_csv = "/data/" + os.path.basename(csv_path)
-    with open(csv_path) as f:
-        header = f.readline().strip().split(',')
-    cols_ddl = ', '.join(f"{c} bigint" for c in header)
     statements = split_statements(sql_path)
     return (
-        [f"create table r ({cols_ddl})",
-         f"copy r from '{abs_csv}' (format csv, header true)",
+        [f"create table r (col0 bigint, col1 bigint)",
+         f"copy r from '{abs_csv}' (format csv, header false)",
          f"select count(*) from r"]
         + statements
     )

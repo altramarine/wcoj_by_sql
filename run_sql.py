@@ -8,7 +8,7 @@ def run_sql_file(path: str, con=None):
     current = []
     with open(path) as f:
         for line in f:
-            line = re.sub(r',\s*\n', lambda m: m.group(0), line)  # preserve line
+            line = re.sub(r'--.*', '', line)  # strip comments
             if line.rstrip().endswith(';'):
                 current.append(line.rstrip().rstrip(';'))
                 stmt = '\n'.join(current).strip()
@@ -25,6 +25,8 @@ def run_sql_file(path: str, con=None):
 
     # Strip trailing commas before SELECT (CTE generator artifact)
     statements = [re.sub(r',\s*\n(SELECT\b)', r'\n\1', s) for s in statements]
+    # Drop empty statements (were pure comments)
+    statements = [s for s in statements if s.strip()]
 
     if con is None:
         con = duckdb.connect()
@@ -38,7 +40,7 @@ def run_sql_file(path: str, con=None):
             tm += time.time() - start;
             print(f"duration=: {time.time() - start:.3f}s")
             # Print results for SELECT statements
-            if result.description:
+            if result and result.description:
                 cols = [d[0] for d in result.description]
                 rows = result.fetchall()
                 print('\t'.join(cols))
@@ -70,7 +72,7 @@ if __name__ == "__main__":
     print(f"Loading dataset: {args.dataset} ({dataset_path})")
 
     con = duckdb.connect(config={"temp_directory": "", "max_memory": "220GB"})
-    con.execute(f"CREATE TABLE graph AS SELECT * FROM read_csv_auto('{dataset_path}');")
+    con.execute(f"CREATE TABLE graph AS SELECT col0, col1 FROM read_csv('{dataset_path}', names=['col0','col1'], header=false);")
     con.execute("SET THREADS=32;")
     con.execute("CREATE TEMP TABLE R AS SELECT * FROM graph;")
     con.execute("DROP TABLE graph;")
