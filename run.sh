@@ -21,12 +21,13 @@ else
 fi
 
 # for dataset in topcats skitters uspatent; do
-for dataset in topcats skitters uspatent; do
+for dataset in topcats; do
 
 mkdir -p ${LOG_DIR}/${dataset}
 mkdir -p ${RESULT_DIR}/${dataset}
 
-for qfile in 2.sql 3.sql 4cycle.sql; do
+# for qfile in 2.sql 3.sql 4cycle.sql; do
+for qfile in 5cycle.sql; do
 
 result_file="./${RESULT_DIR}/${dataset}/${qfile}.result.txt"
 
