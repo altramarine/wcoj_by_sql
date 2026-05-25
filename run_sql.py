@@ -1,6 +1,8 @@
 import duckdb
 import sys
 import time
+import gc
+import os
 
 def run_sql_file(path: str, con=None):
     import re
@@ -66,8 +68,8 @@ if __name__ == "__main__":
     parser.add_argument("sql", nargs="?", default="1.sql", help="SQL file to run")
     parser.add_argument("--dataset", "-d", default="skitters",
                         choices=list(DATASETS), help="Dataset to load (default: skitters)")
-    args = parser.parse_args()
-
+    args = parser.parse_args() 
+    
     dataset_path = DATASETS[args.dataset]
     print(f"Loading dataset: {args.dataset} ({dataset_path})")
 

@@ -1,16 +1,16 @@
 CREATE VIEW R_1 AS SELECT col0 as a, col1 as b FROM R;
-CREATE VIEW R_2 AS SELECT col0 as b, col1 as c FROM R;
-CREATE VIEW R_3 AS SELECT col0 as a, col1 as d FROM R;
+CREATE VIEW R_2 AS SELECT col0 as c, col1 as b FROM R;
+CREATE VIEW R_3 AS SELECT col0 as d, col1 as a FROM R;
 CREATE VIEW R_4 AS SELECT col0 as d, col1 as c FROM R;
 
-CREATE VIEW R_1_cnt_b AS SELECT a, COUNT(DISTINCT b) as cnt FROM R_1 GROUP BY a;
-CREATE VIEW R_1_cnt_a AS SELECT b, COUNT(DISTINCT a) as cnt FROM R_1 GROUP BY b;
-CREATE VIEW R_2_cnt_c AS SELECT b, COUNT(DISTINCT c) as cnt FROM R_2 GROUP BY b;
-CREATE VIEW R_2_cnt_b AS SELECT c, COUNT(DISTINCT b) as cnt FROM R_2 GROUP BY c;
-CREATE VIEW R_3_cnt_d AS SELECT a, COUNT(DISTINCT d) as cnt FROM R_3 GROUP BY a;
-CREATE VIEW R_3_cnt_a AS SELECT d, COUNT(DISTINCT a) as cnt FROM R_3 GROUP BY d;
-CREATE VIEW R_4_cnt_c AS SELECT d, COUNT(DISTINCT c) as cnt FROM R_4 GROUP BY d;
-CREATE VIEW R_4_cnt_d AS SELECT c, COUNT(DISTINCT d) as cnt FROM R_4 GROUP BY c;
+CREATE VIEW R_1_cnt_b AS SELECT a, COUNT(*) as cnt FROM R_1 GROUP BY a;
+CREATE VIEW R_1_cnt_a AS SELECT b, COUNT(*) as cnt FROM R_1 GROUP BY b;
+CREATE VIEW R_2_cnt_c AS SELECT b, COUNT(*) as cnt FROM R_2 GROUP BY b;
+CREATE VIEW R_2_cnt_b AS SELECT c, COUNT(*) as cnt FROM R_2 GROUP BY c;
+CREATE VIEW R_3_cnt_d AS SELECT a, COUNT(*) as cnt FROM R_3 GROUP BY a;
+CREATE VIEW R_3_cnt_a AS SELECT d, COUNT(*) as cnt FROM R_3 GROUP BY d;
+CREATE VIEW R_4_cnt_c AS SELECT d, COUNT(*) as cnt FROM R_4 GROUP BY d;
+CREATE VIEW R_4_cnt_d AS SELECT c, COUNT(*) as cnt FROM R_4 GROUP BY c;
 
 CREATE TEMP TABLE _ab AS SELECT R_1.a as a, R_1.b as b FROM R_1 SEMI JOIN R_2 ON R_1.b = R_2.b SEMI JOIN R_3 ON R_1.a = R_3.a;
 
@@ -34,7 +34,7 @@ CREATE TEMP TABLE _cd AS SELECT R_4.d AS d, R_4.c AS c FROM R_4 SEMI JOIN R_2 ON
 
 CREATE TEMP TABLE best_cd_abc_ad AS WITH
   ad_cnt AS (SELECT * FROM R_3_cnt_a),
-  abc_cnt AS (SELECT c, COUNT(DISTINCT (a, b)) AS cnt FROM _abc GROUP BY c),
+  abc_cnt AS (SELECT c, COUNT(*) AS cnt FROM _abc GROUP BY c),
   best_r1 AS (SELECT _cd.d AS d, _cd.c AS c, 3 AS tag, abc_cnt.cnt AS cnt FROM _cd JOIN abc_cnt ON _cd.c = abc_cnt.c),
   best_r2 AS (SELECT best_r1.d AS d, best_r1.c AS c,
     CASE WHEN best_r1.cnt < ad_cnt.cnt THEN best_r1.tag ELSE 6 END AS tag,
@@ -43,7 +43,7 @@ CREATE TEMP TABLE best_cd_abc_ad AS WITH
 SELECT d, c, tag FROM best_r2;
 
 CREATE TEMP TABLE best_cd_abd_bc AS WITH
-  abd_cnt AS (SELECT d, COUNT(DISTINCT (a, b)) AS cnt FROM _abd GROUP BY d),
+  abd_cnt AS (SELECT d, COUNT(*) AS cnt FROM _abd GROUP BY d),
   bc_cnt AS (SELECT * FROM R_2_cnt_b),
   best_r1 AS (SELECT _cd.d AS d, _cd.c AS c, 4 AS tag, abd_cnt.cnt AS cnt FROM _cd JOIN abd_cnt ON _cd.d = abd_cnt.d),
   best_r2 AS (SELECT best_r1.d AS d, best_r1.c AS c,

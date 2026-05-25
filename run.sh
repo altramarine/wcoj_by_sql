@@ -20,14 +20,14 @@ else
   RESULT_DIR="results-duckdb"
 fi
 
-# for dataset in topcats skitters uspatent; do
 for dataset in topcats; do
+# for dataset in topcats; do
 
 mkdir -p ${LOG_DIR}/${dataset}
 mkdir -p ${RESULT_DIR}/${dataset}
 
 # for qfile in 2.sql 3.sql 4cycle.sql; do
-for qfile in 5cycle.sql; do
+for qfile in 1.sql 2.sql 3.sql 3cycle.sql 4cycle.sql 5cycle.sql; do
 
 result_file="./${RESULT_DIR}/${dataset}/${qfile}.result.txt"
 
@@ -49,11 +49,11 @@ else
 
 
 # uv run python run_sql.py tmp/wcoj.sql -d ${dataset} > ${LOG_DIR}/${dataset}/wcoj_${qfile}.txt
-uv run python run_sql.py queries/wcoj/${qfile} -d ${dataset} > ${LOG_DIR}/${dataset}/wcoj_${qfile}.txt
+numactl --cpunodebind=0 --membind=0 uv run python run_sql.py queries/wcoj/${qfile} -d ${dataset} > ${LOG_DIR}/${dataset}/wcoj_${qfile}.txt
 grep "Execution time:" ${LOG_DIR}/${dataset}/wcoj_${qfile}.txt | sed 's/Execution time:/wcoj Execution time:/' >> ${result_file}
 
-uv run python run_sql.py tmp/default.sql -d ${dataset} > ${LOG_DIR}/${dataset}/default_${qfile}.txt
-grep "Execution time:" ${LOG_DIR}/${dataset}/default_${qfile}.txt | sed 's/Execution time:/default Execution time:/' >> ${result_file}
+# uv run python run_sql.py tmp/default.sql -d ${dataset} > ${LOG_DIR}/${dataset}/default_${qfile}.txt
+# grep "Execution time:" ${LOG_DIR}/${dataset}/default_${qfile}.txt | sed 's/Execution time:/default Execution time:/' >> ${result_file}
 
 fi
 

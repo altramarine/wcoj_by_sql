@@ -427,7 +427,8 @@ def CQ_to_SQL(cq_: CQ):
       s = (f"{query_name} AS (" + '\n')
 
       if (bitmap | (1 << var_id[var_this_round])) == (1 << (n)) - 1:
-        s = (f"{query_name} AS SELECT {'+'.join(f'SUM({v})' for v in variable_list)} FROM (" + '\n')
+        # s = (f"{query_name} AS SELECT {'+'.join(f'SUM({v})' for v in variable_list)} FROM (" + '\n')
+        s = (f"{query_name} AS SELECT COUNT(*) FROM (" + '\n')
 
       atom_list = []
       for atom in cq.atoms:
@@ -507,7 +508,8 @@ def main():
   
   out = open(default_dir, "w") if default_dir else sys.stdout
   try:
-    print(f"CREATE TEMP TABLE __query__result__ AS SELECT {"+".join(f"SUM({v})" for v in CQ.atom_vars)} FROM (SELECT {", ".join(head)} FROM {", ".join(select)} WHERE {" and ".join(equ)});", file = out)
+    # print(f"CREATE TEMP TABLE __query__result__ AS SELECT {"+".join(f"SUM({v})" for v in CQ.atom_vars)} FROM (SELECT {", ".join(head)} FROM {", ".join(select)} WHERE {" and ".join(equ)});", file = out)
+    print(f"CREATE TEMP TABLE __query__result__ AS SELECT COUNT(*) FROM (SELECT {", ".join(head)} FROM {", ".join(select)} WHERE {" and ".join(equ)});", file = out)
   finally:
     if default_dir:
       out.close()
