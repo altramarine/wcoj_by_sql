@@ -1,50 +1,55 @@
-Problems with directly writing: 
+For q4
 
-1. We should use semi join whenever it is a projection, otherwise it won't be detected.
-2. Sometimes CTE optimization is messed up.
-3. The Union All part is slow!
+q(a, b, c, d) :- R(a, b), R(b, c), R(a, c), R(b ,d), R(c, d)
 
-Union would have amplification -> use WITH to forbid this!
+a normal plan would be 
+```
+-- R1(a, b), R2(b, c), R3(a, c), R4(b, d), R5(c, d)
+-- R2 [R1, R3, R4, R5]
+-- [1] R1__R2__R3(a, b, c), R4(b, d), R5(c, d)
+-- | R4 [R1__R2__R3, R5]
+-- | [2] R1__R2__R3__R4__R5(a, b, c, d) [acyclic]
+-- | [3] R1__R2__R3(a, b, c), R4__R5(b, d, c) [acyclic]
+-- [4] R1__R2__R3(a, b, c), R4(b, d), R5(c, d)
+-- | R4 [R1__R2__R3, R5]
+-- | [5] R1__R2__R3__R4__R5(a, b, c, d) [acyclic]
+-- | [6] R1__R2__R3(a, b, c), R4__R5(b, d, c) [acyclic]
+-- [7] R1(a, b), R2__R4__R5(b, c, d), R3(a, c)
+-- | R1 [R2__R4__R5, R3]
+-- | [8] R1__R2__R3__R4__R5(a, b, c, d) [acyclic]
+-- | [9] R1__R3(a, b, c), R2__R4__R5(b, c, d) [acyclic]
+-- [10] R1(a, b), R2__R4__R5(b, c, d), R3(a, c)
+-- | R1 [R2__R4__R5, R3]
+-- | [11] R1__R2__R3__R4__R5(a, b, c, d) [acyclic]
+-- | [12] R1__R3(a, b, c), R2__R4__R5(b, c, d) [acyclic]
+```
 
-To force materialization
+But we found that actually we are way faster w/ merging node1 w/ node4 and merging node7 w/ node10.
+
+Hence the plan is:
 
 ```
-WITH query_0 AS MATERIALIZED (
-  SELECT ...
-),
-query_1 AS MATERIALIZED (
-  ...
-)
+-- R1(a, b), R2(b, c), R3(a, c), R4(b, d), R5(c, d)
+-- R2 [R1, R3, R4, R5]
+-- [1/4] R1__R2__R3(a, b, c), R4(b, d), R5(c, d)
+-- | R4 [R1__R2__R3, R5]
+-- | [2] R1__R2__R3__R4__R5(a, b, c, d) [acyclic]
+-- | [3] R1__R2__R3(a, b, c), R4__R5(b, d, c) [acyclic]
+-- [7/10] R1(a, b), R2__R4__R5(b, c, d), R3(a, c)
+-- | R1 [R2__R4__R5, R3]
+-- | [8] R1__R2__R3__R4__R5(a, b, c, d) [acyclic]
+-- | [9] R1__R3(a, b, c), R2__R4__R5(b, c, d) [acyclic]
 ```
 
-variation would:
+How to generalize it?
+- if single case goes to different subcases, we should merge them! 
+  -- The following join is actually ```[gen_R_1|gen_R_2] join {other relations}```
 
-for every bitmask
-1. generate query_{bitmask} from possible best_{past_bitmask} 
-2. search for every possible extension (pos_id, var_id), as best_{bitmask}
+- What happens if query is a clique? we can not merge them but still we might have some duplicated calculation.
+  -- e.g. we get {[r1, r2] [r3, r4] r5} twice in 5cycles, we can not join them? is there a sematic to define what's necessary?
 
-- large constant merging query_{bitmask} to every query
-- intermediate result from query is large.
+Suppose a Function \Sigma : join graph, \Est -> split, candidates, where \Est is that you give any join according to join graph.
 
-- best_{bitmask} is materialized - to wait for query_{bitmask}
-- extra overhead compared to normal WCOJ 
-  - var_id introduced and materialized. this is not bottleneck!
-  - every varaible is scanned multiple times
-  - where does q2's runtime overhead comefrom?
+How to do join? Does a split help w/ Estimation?
 
-q2: 
-wcoj_var: len(prop_1111) = 13576777569
-wcoj    : len(prop_3) = 13627736762
-
-q3: 
-wcoj_var: len(prop_1111) = 10267520216
-wcoj    : len(prop_3) = 12736152112
-
-
-NOW: muti-threading optimization is bad. when threads=20 we have quite good performance
-
-两个 RIGHT_SEMI JOIN 合计占了 82s CPU（80%），且 operator_cardinality 分别是 1498万和 1270万行，但它们的 build side 是通过 INNER JOIN 膨胀出来的 2.4亿/2.86亿行中间结果。
-
-这正是之前看到的问题：build side 选错了，大表做 build，小表做 probe，hash table 巨大导致 cache miss 严重。
-
-UNION 两个分支是串行的（operator_timing: 0.00s 但 cpu_time 85s），说明它们没有并行，是顺序执行的。
+The question is in what case we should simply split the work?

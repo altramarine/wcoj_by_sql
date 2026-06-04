@@ -16,6 +16,8 @@ class Relation:
 
 
 def Parse(s: str) -> list[Relation]:
+  if ':-' in s:
+    s = s.split(':-', 1)[1]
   relations = []
   for token in re.findall(r'\w+\s*\([^)]*\)', s):
     m = re.match(r'(\w+)\s*\(([^)]*)\)', token)
@@ -101,7 +103,17 @@ def ask_for_plan(group: list[Relation], origin: dict[str, int] | None = None) ->
   print(f'-- [{node.id}] group: {summary}', file=sys.stderr)
   print(f'-- [{node.id}] enter split (e.g. "R1 R2 R3"): ', end='', file=sys.stderr)
 
-  raw = input().strip()
+  while True:
+    raw = input().strip()
+    # strip leading "-- " and "| " decoration
+    raw = re.sub(r'^(--\s*)(\|\s*)*', '', raw)
+    # skip lines like "[1] ..." that describe a child group
+    if re.match(r'\[\d+\]', raw):
+      continue
+    break
+  # normalize "R3 [R2, R1__R4]" -> "R3 R2 R1__R4"
+  raw = re.sub(r'[\[\],]', ' ', raw)
+  
   parts = raw.split()
   start_rel  = rel_map[parts[0]]
   split_rels = [rel_map[p] for p in parts[1:]]
@@ -110,6 +122,8 @@ def ask_for_plan(group: list[Relation], origin: dict[str, int] | None = None) ->
   node.split_candidates = split_rels
 
   print(f'-- [{node.id}] start: {start_rel.name}  split: {" vs ".join(r.name for r in split_rels)}', file=sys.stderr)
+
+  seen_branches: dict[tuple, tuple[TreeNode, Relation]] = {}  # branch key -> (child, merged)
 
   for s in split_rels:
     merged = merge([start_rel, s])
@@ -131,27 +145,40 @@ def ask_for_plan(group: list[Relation], origin: dict[str, int] | None = None) ->
     branch_summary = ', '.join(f'{r.name}({", ".join(r.var_list)})' for r in branch)
     print(f'-- [{node.id}] {start_rel.name} join w/ {s.name}: {branch_summary}', file=sys.stderr)
 
-    child_origin = dict(origin)
-    child_origin[merged.name] = _next_id  # merged will be owned by the child node
+    branch_key = tuple(r.name for r in branch)
+    if branch_key in seen_branches:
+      print(f'-- [{node.id}] branch identical to a previous split, reusing child', file=sys.stderr)
+      child, merged = seen_branches[branch_key]
+    else:
+      child_origin = dict(origin)
+      child_origin[merged.name] = _next_id  # merged will be owned by the child node
 
-    child = ask_for_plan(branch, child_origin)
+      child = ask_for_plan(branch, child_origin)
+      seen_branches[branch_key] = (child, merged)
+
     node.children.append(child)
     node.child_merged.append(merged)
 
   return node
 
 
-def print_tree(node: TreeNode, indent: int = 0) -> None:
-  prefix = '-- ' + '| ' * indent
-  if node.split_start is None:
-    return
-  splits = ', '.join(r.name for r in node.split_candidates)
-  print(f'{prefix}{node.split_start.name} [{splits}]')
-  for child in node.children:
-    group_str = ', '.join(f'{r.name}({", ".join(r.var_list)})' for r in child.group)
-    tag = ' [acyclic]' if child.acyclic else ''
-    print(f'{prefix}[{child.id}] {group_str}{tag}')
-    print_tree(child, indent + 1)
+def print_tree(root: TreeNode) -> None:
+  def _print(node: TreeNode, indent: int) -> None:
+    prefix = '-- ' + '| ' * indent
+    if node.split_start is None:
+      return
+    splits = ', '.join(r.name for r in node.split_candidates)
+    print(f'{prefix}{node.split_start.name} [{splits}]')
+    seen: set[int] = set()
+    for child in node.children:
+      if child.id in seen:
+        continue
+      seen.add(child.id)
+      group_str = ', '.join(f'{r.name}({", ".join(r.var_list)})' for r in child.group)
+      tag = ' [acyclic]' if child.acyclic else ''
+      print(f'{prefix}[{child.id}] {group_str}{tag}')
+      _print(child, indent + 1)
+  _print(root, 0)
 
 
 def gyo(group: list[Relation]) -> bool:
@@ -230,6 +257,9 @@ def sql_gen(node: TreeNode) -> str:
     b = b + '\n  ' + s
   b = b + "\n" + f"SELECT {', '.join(R.var_list)}, tag FROM {last_best};"
   cmds.append(b)
+  # table_name -> list of SELECT strings, for dedup when same child appears multiple times
+  pending_tables: dict[str, list[str]] = {}
+
   for idx, child in enumerate(node.children):
     child_name = f"node{child.id}_"
     U = node.split_candidates[idx]
@@ -245,7 +275,7 @@ def sql_gen(node: TreeNode) -> str:
         varmap[var] = f"{rel_table(node, U)}.{var}"
     s = (
       f"SELECT {", ".join(select)} FROM"
-      +f" {node_name}best JOIN {rel_table(node, U)} {f"ON {join_cond}" if join_cond != '' else ''}"
+      +f" {rel_table(node, U)} JOIN {node_name}best {f"ON {join_cond}" if join_cond != '' else ''}"
     )
     for V in node.split_candidates:
       if V != R and V != U:
@@ -267,8 +297,12 @@ def sql_gen(node: TreeNode) -> str:
       s = f"SELECT {', '.join(f'{expr} as {var}' for var, expr in sorted(outer_select.items()))} FROM {from_part}"
       collect.append(s)
     else:
-      s = f"CREATE TEMP TABLE {rel_table(child, node.child_merged[idx])} AS " + s + ';'
-      cmds.append(s)
+      tname = rel_table(child, node.child_merged[idx])
+      pending_tables.setdefault(tname, []).append(s)
+
+  for tname, selects in pending_tables.items():
+    union = '\nUNION ALL\n'.join(selects)
+    cmds.append(f"CREATE TEMP TABLE {tname} AS {union};")
 
   return '\n'.join(cmds)
 
@@ -276,6 +310,8 @@ def main():
   first_line = input()
   relations = Parse(first_line)
   print(GenViews(relations, base_table='R'), flush=True)
+  print("SET disabled_optimizers = 'join_order, build_side_probe_side';")
+
 
   root = ask_for_plan(relations)
 
@@ -292,7 +328,11 @@ def main():
       sql = sql_gen(node)
       if sql:
         print(sql)
+    seen: set[int] = set()
     for child in node.children:
+      if child.id in seen:
+        continue
+      seen.add(child.id)
       queue.append(child)
 
   if collect:

@@ -1,5 +1,6 @@
 sudo mkdir -p /data
 echo '/dev/nvme0n1 /data ext4 defaults 0 0' | sudo tee -a /etc/fstab
+sudo mkfs.ext4 /dev/nvme0n1
 sudo mount /data
 sudo chmod 777 /data
 

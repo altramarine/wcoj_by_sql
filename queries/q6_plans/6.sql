@@ -1,0 +1,1 @@
+q(a, b, c, d) :- R(a, b), R(b, c), R(a, c), R(a, d), R(b, d), R(c, d)
