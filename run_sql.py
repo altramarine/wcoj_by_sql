@@ -47,7 +47,7 @@ def run_sql_file(path: str, con=None):
                 rows = result.fetchall()
                 print('\t'.join(cols))
                 print('-' * (len('\t'.join(cols)) + 8))
-                for row in rows[0:1]:
+                for row in rows[0:5]:
                     print('\t'.join(str(v) for v in row))
                 print(f"({len(rows)} rows)")
         except Exception as e:

@@ -19,6 +19,6 @@ echo "deb [arch=all,$(dpkg --print-architecture) signed-by=/usr/share/keyrings/p
 
 
 sudo apt update
-sudo apt install tree default-jre liblog4j2-java cmake
+sudo apt install tree default-jre liblog4j2-java cmake numactl tmux
 
 cargo install just
