@@ -1,6 +1,6 @@
 CREATE VIEW R_1 AS SELECT col0 AS a, col1 AS b FROM R;
 CREATE VIEW R_2 AS SELECT col0 AS b, col1 AS c FROM R;
-CREATE VIEW R_3 AS SELECT col0 AS a, col1 AS c FROM R;
+CREATE VIEW R_3 AS SELECT col0 AS c, col1 AS a FROM R;
 
 -- Lp norms of R_1: degree(a) and degree(b)
 SELECT
