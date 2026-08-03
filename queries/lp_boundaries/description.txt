@@ -1,0 +1,65 @@
+Read the conjunctive query in queries/<query_name>.sql and generate its
+entropy LP bound in queries/lp_boundaries/<query_name>.sql.txt.
+
+Output only the LP accepted by Lpsolver.py. Do not include comments,
+explanations, Markdown, or code fences.
+
+Use these rules:
+
+1. Collect every query variable and sort the variables alphabetically.
+
+2. Represent the entropy of a nonempty variable set S as h_<variables>, with
+   the variable names concatenated in alphabetical order. For example:
+   H({x}) = h_x, H({x,z}) = h_xz, and H({x,y,z}) = h_xyz.
+
+3. Represent the entropy of the empty set with the parameter placeholder
+   {h_empty}. Do not create an h_empty variable and do not write
+   "h_empty = 0".
+
+4. Maximize the entropy of the complete set of query variables. For a query
+   with variables x, y, and z, write:
+
+   max: h_xyz
+
+5. Immediately after the objective, add this placeholder on its own line:
+
+   {lp_statistics}
+
+   lp_statistics.py replaces it with the measured Lp degree inequalities for
+   every column of every atom occurrence.
+
+6. Generate all Shannon monotonicity inequalities. For every subset A of the
+   complete variable set and every variable i not in A, add:
+
+   H(A) <= H(A union {i})
+
+   Use {h_empty} when A is empty. Generate each distinct inequality once.
+   Put all monotonicity inequalities together after the cardinality
+   constraints.
+
+7. Generate all elemental Shannon submodularity inequalities. For every
+   unordered pair of distinct variables i,j and every subset K of all
+   remaining variables, add:
+
+   H(K union {i,j}) + H(K) <= H(K union {i}) + H(K union {j})
+
+   Use {h_empty} when K is empty. Generate each distinct inequality once.
+   Put all submodularity inequalities together after all monotonicity
+   inequalities.
+
+8. Separate the objective, {lp_statistics}, monotonicity inequalities, and
+   submodularity inequalities with one blank line.
+   Do not put blank lines inside a group.
+
+9. Use only "<=", ">=", or "=" operators supported by Lpsolver.py. The
+    generated file must parse after every placeholder is replaced with a
+    numeric value.
+
+For the triangle query
+
+q(x, y, z) :- R(x, y), R(y, z), R(x, z)
+
+the generated file must have objective max: h_xyz, the {lp_statistics}
+placeholder, all subset-cover monotonicity inequalities, and the six
+submodularity inequalities corresponding to I(X;Y|K), I(X;Z|K), and
+I(Y;Z|K), where K is either empty or the remaining variable.

@@ -1,0 +1,23 @@
+max: h_xyz
+
+{lp_statistics}
+
+{h_empty} <= h_x
+{h_empty} <= h_y
+{h_empty} <= h_z
+h_x <= h_xy
+h_y <= h_xy
+h_x <= h_xz
+h_z <= h_xz
+h_y <= h_yz
+h_z <= h_yz
+h_xy <= h_xyz
+h_yz <= h_xyz
+h_xz <= h_xyz
+
+h_xy + {h_empty} <= h_x + h_y
+h_xz + {h_empty} <= h_x + h_z
+h_yz + {h_empty} <= h_y + h_z
+h_z + h_xyz <= h_xz + h_yz
+h_y + h_xyz <= h_xy + h_yz
+h_x + h_xyz <= h_xy + h_xz

@@ -1,0 +1,86 @@
+(sql-rewrite) yp_wei@node0:~/wcoj_by_sql$ uv run python lp_statistics.py \
+  --dataset topcats \
+  --query queries/1.sql \
+  --lp queries/lp_boundaries/1.sql.txt \
+  --max-p 5
+status: optimal
+objective: 21.4710756719
+variables:
+  h_x = 9.02505632093
+  h_xy = 15.2480659964
+  h_xyz = 21.4710756719
+  h_xz = 15.2480659964
+  h_y = 6.22300967551
+  h_yz = 12.446019351
+  h_z = 6.22300967551
+boundary inequalities:
+  h_xy - 0.5 h_x <= 10.735537835972853
+  h_xy - 0.66666666666666674 h_x <= 9.2313617824847469
+  h_xz - 0.5 h_x <= 10.735537835972853
+  h_xz - 0.66666666666666674 h_x <= 9.2313617824847469
+  h_xy + 0 <= h_x + h_y
+  h_xz + 0 <= h_x + h_z
+  h_yz + 0 <= h_y + h_z
+  h_z + h_xyz <= h_xz + h_yz
+  h_y + h_xyz <= h_xy + h_yz
+  h_x + h_xyz <= h_xy + h_xz
+exp(objective): 2112368511.0019162
+
+
+(sql-rewrite) yp_wei@node0:~/wcoj_by_sql$ uv run python lp_statistics.py \
+  --dataset topcats \
+  --query queries/3cycle.sql \
+  --lp queries/lp_boundaries/3cycle.sql.txt \
+  --max-p 5
+status: optimal
+objective: 21.4710756719
+variables:
+  h_x = 9.02505632093
+  h_xy = 15.2480659964
+  h_xyz = 21.4710756719
+  h_xz = 15.2480659964
+  h_y = 9.02505632093
+  h_yz = 15.2480659964
+  h_z = 9.02505632093
+boundary inequalities:
+  h_xy - 0.5 h_x <= 10.735537835972849
+  h_xy - 0.66666666666666674 h_x <= 9.2313617824847469
+  h_yz - 0.5 h_y <= 10.735537835972849
+  h_yz - 0.66666666666666674 h_y <= 9.2313617824847469
+  h_xz - 0.5 h_z <= 10.735537835972849
+  h_xz - 0.66666666666666674 h_z <= 9.2313617824847469n
+  h_z + h_xyz <= h_xz + h_yz
+  h_y + h_xyz <= h_xy + h_yz
+  h_x + h_xyz <= h_xy + h_xz
+exp(objective): 2112368511.0019011
+
+
+(sql-rewrite) yp_wei@node0:~/wcoj_by_sql$ uv run python run_sql.py queries/wcoj/1.sql -d topcats
+--------------------
+81440577
+(1 rows)
+--- Executing ---
+DROP TABLE best_ab
+
+duration=: 0.017s
+Success
+---------------
+(0 rows)
+Execution time: 3.534s
+(sql-rewrite) yp_wei@node0:~/wcoj_by_sql$ uv run python run_sql.py queries/normal/1-.sql -d topcats
+Loading dataset: topcats (./datasets/wiki-topcats.csv)
+--- Executing ---
+SELECT COUNT(*)
+FROM R AS r1
+JOIN R AS r3
+  ON r1.col0 = r3.col0
+SEMI JOIN R AS r2
+  ON r1.col1 = r2.col0
+ AND r3.col1 = r2.col1
+
+duration=: 8.847s
+count_star()
+--------------------
+81440577
+(1 rows)
+Execution time: 8.847s

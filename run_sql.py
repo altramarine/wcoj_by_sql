@@ -73,7 +73,7 @@ if __name__ == "__main__":
     dataset_path = DATASETS[args.dataset]
     print(f"Loading dataset: {args.dataset} ({dataset_path})")
 
-    con = duckdb.connect(config={"temp_directory": "", "max_memory": "32GB"})
+    con = duckdb.connect(config={"temp_directory": "", "max_memory": "220GB"})
     con.execute(f"CREATE TABLE graph AS SELECT col0, col1 FROM read_csv('{dataset_path}', names=['col0','col1'], header=false);")
     con.execute("SET THREADS=32;")
     con.execute("CREATE TEMP TABLE R AS SELECT * FROM graph;")

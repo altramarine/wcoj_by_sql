@@ -1,0 +1,61 @@
+max: h_abcd
+
+{lp_statistics}
+
+{h_empty} <= h_a
+{h_empty} <= h_b
+{h_empty} <= h_c
+{h_empty} <= h_d
+h_a <= h_ab
+h_a <= h_ac
+h_a <= h_ad
+h_b <= h_ab
+h_b <= h_bc
+h_b <= h_bd
+h_c <= h_ac
+h_c <= h_bc
+h_c <= h_cd
+h_d <= h_ad
+h_d <= h_bd
+h_d <= h_cd
+h_ab <= h_abc
+h_ab <= h_abd
+h_ac <= h_abc
+h_ac <= h_acd
+h_ad <= h_abd
+h_ad <= h_acd
+h_bc <= h_abc
+h_bc <= h_bcd
+h_bd <= h_abd
+h_bd <= h_bcd
+h_cd <= h_acd
+h_cd <= h_bcd
+h_abc <= h_abcd
+h_abd <= h_abcd
+h_acd <= h_abcd
+h_bcd <= h_abcd
+
+h_ab + {h_empty} <= h_a + h_b
+h_abc + h_c <= h_ac + h_bc
+h_abd + h_d <= h_ad + h_bd
+h_abcd + h_cd <= h_acd + h_bcd
+h_ac + {h_empty} <= h_a + h_c
+h_abc + h_b <= h_ab + h_bc
+h_acd + h_d <= h_ad + h_cd
+h_abcd + h_bd <= h_abd + h_bcd
+h_ad + {h_empty} <= h_a + h_d
+h_abd + h_b <= h_ab + h_bd
+h_acd + h_c <= h_ac + h_cd
+h_abcd + h_bc <= h_abc + h_bcd
+h_bc + {h_empty} <= h_b + h_c
+h_abc + h_a <= h_ab + h_ac
+h_bcd + h_d <= h_bd + h_cd
+h_abcd + h_ad <= h_abd + h_acd
+h_bd + {h_empty} <= h_b + h_d
+h_abd + h_a <= h_ab + h_ad
+h_bcd + h_c <= h_bc + h_cd
+h_abcd + h_ac <= h_abc + h_acd
+h_cd + {h_empty} <= h_c + h_d
+h_acd + h_a <= h_ac + h_ad
+h_bcd + h_b <= h_bc + h_bd
+h_abcd + h_ab <= h_abc + h_abd
