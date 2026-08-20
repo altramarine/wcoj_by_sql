@@ -1,0 +1,39 @@
+Loading dataset: skitters (./datasets/as-skitter.csv)
+--- Executing ---
+CREATE VIEW R1 AS SELECT col0 AS x, col1 AS y FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE VIEW R2 AS SELECT col0 AS y, col1 AS z FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+CREATE VIEW R3 AS SELECT col0 AS x, col1 AS z FROM R
+
+duration=: 0.000s
+Count
+-------------
+(0 rows)
+--- Executing ---
+SET disabled_optimizers = 'join_order, build_side_probe_side'
+
+duration=: 0.000s
+Success
+---------------
+(0 rows)
+--- Executing ---
+SELECT COUNT(*) FROM ((R1 t1 JOIN R3 t3 ON t1.x = t3.x) JOIN R2 t2 ON t1.y = t2.y AND t3.z = t2.z)
+
+duration=: 110.984s
+count_star()
+--------------------
+28769868
+(1 rows)
+Execution time: 110.985s
+STATUS: NORMAL
