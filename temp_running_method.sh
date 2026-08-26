@@ -34,3 +34,12 @@ uv run python lp_statistics.py \
   --query queries/2.sql \
   --lp queries/lp_boundaries/2.sql.txt \
   --max-p 5
+
+  uv run python plot_robustness_boxplot.py \
+  robustness-test/results-skitters-15min.tsv \
+  -o robustness-test/results-skitters-15min-boxplot.png
+
+  uv run python plot_robustness_boxplot.py \
+  robustness-test/results-skitters-15min.tsv \
+  --filtered \
+  -o robustness-test/filtered/results-skitters-15min-boxplot.png
