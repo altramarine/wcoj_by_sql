@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import re
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -23,7 +24,23 @@ def read_results(path: Path) -> pd.DataFrame:
     return results
 
 
-def plot_results(results: pd.DataFrame, output: Path) -> None:
+def filter_disconnected_binary_plans(results: pd.DataFrame) -> pd.DataFrame:
+    plan_root = Path("robustness-test/binary")
+    excluded_queries = []
+    for query in results.loc[results["family"] == "binary", "query"].unique():
+        plan_path = plan_root / query
+        plan_text = plan_path.read_text()
+        if re.search(r"\bCROSS\s+JOIN\b", plan_text, flags=re.IGNORECASE):
+            excluded_queries.append(query)
+
+    if excluded_queries:
+        print("Excluded disconnected binary plans:")
+        for query in excluded_queries:
+            print(f"  {query}")
+    return results[~results["query"].isin(excluded_queries)].copy()
+
+
+def plot_results(results: pd.DataFrame, output: Path, dataset: str) -> None:
     normal = results[results[STATUS_COLUMN] == "NORMAL"]
     abnormal = results[results[STATUS_COLUMN].isin(["MEMORY_OUT", "TIMEOUT"])]
     query_types = list(dict.fromkeys(results["query_type"]))
@@ -85,7 +102,7 @@ def plot_results(results: pd.DataFrame, output: Path) -> None:
     axis.set_xticklabels(query_types)
     axis.set_xlabel("Query type")
     axis.set_ylabel("Execution time (seconds)")
-    axis.set_title("Skitter robustness test: execution-time variance")
+    axis.set_title(f"{dataset} robustness test: execution-time variance")
     axis.grid(axis="y", linestyle="--", alpha=0.3)
     axis.legend(
         [plt.Line2D([0], [0], color=color, linewidth=8) for color in family_colors.values()],
@@ -120,8 +137,17 @@ def main() -> None:
         type=Path,
         default="robustness-test/results-skitters-15min-boxplot.png",
     )
+    parser.add_argument(
+        "--filtered",
+        action="store_true",
+        help="Exclude binary plans containing a disconnected CROSS JOIN",
+    )
     args = parser.parse_args()
-    plot_results(read_results(args.input), args.output)
+    results = read_results(args.input)
+    if args.filtered:
+        results = filter_disconnected_binary_plans(results)
+    dataset = args.input.stem.removeprefix("results-").removesuffix("-15min")
+    plot_results(results, args.output, dataset)
 
 
 if __name__ == "__main__":
