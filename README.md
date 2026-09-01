@@ -23,6 +23,30 @@ Q: this is the most 'general' way to describe a split that I can ever think of, 
 
 This gives a tree-like structure on splitting, on each split we go into different subqueries.
 
+### Random split-plan generator
+
+`robustness-test/random_plan_generator.py` drives `make_split_plan.py` through its interactive stdin/stdout
+interface. Its default `wcoj` mode chooses one relation and two relations that share a
+variable with it at each split. The `binary` mode delegates to the binary-plan generator.
+
+```bash
+uv run python robustness-test/random_plan_generator.py --seed 7 \
+  'q(a,b,c,d) :- R(a,b), R(b,c), R(a,d), R(d,c)' > random-plan.sql
+```
+
+Generate a random binary join plan:
+
+```bash
+uv run python robustness-test/random_plan_generator.py --mode binary --seed 7 \
+  'q(a,b,c,d) :- R(a,b), R(b,c), R(a,d), R(d,c)' > random-binary-plan.sql
+```
+
+The query can also be read from a file or stdin:
+
+```bash
+uv run python robustness-test/random_plan_generator.py --query-file queries/2.sql > random-plan.sql
+```
+
 An example of returned along with comment for the plan is 
 ```sql
 CREATE VIEW R1 AS SELECT col0 AS a, col1 AS b FROM R;
