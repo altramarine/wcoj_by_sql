@@ -3,25 +3,39 @@
 set -u
 
 usage() {
-  echo "Usage: $0 [-d DATASET] [-t SECONDS] [-o OUTPUT] [-r]"
+  echo "Usage: $0 [-d DATASET] [-t SECONDS] [-o OUTPUT] [-q QUERY_TYPES] [-r]"
+  echo "  QUERY_TYPES: query directories separated by spaces or commas, e.g. '3 4' or '3,4'"
 }
 
 dataset="skitters"
 timeout_seconds="600"
 output="robustness-test/results-${dataset}.tsv"
 resume=false
+query_types=""
 
-while getopts ":d:t:o:hr" option; do
+while getopts ":d:t:o:q:hr" option; do
   case "$option" in
     d) dataset="$OPTARG" ;;
     t) timeout_seconds="$OPTARG" ;;
     o) output="$OPTARG" ;;
+    q) query_types="${OPTARG//,/ }" ;;
     h) usage; exit 0 ;;
     r) resume=true ;;
     \?) usage >&2; exit 2 ;;
     :) echo "Option -$OPTARG requires an argument" >&2; usage >&2; exit 2 ;;
   esac
 done
+
+if [[ -n "$query_types" ]]; then
+  for query_type in $query_types; do
+    if [[ ! "$query_type" =~ ^[A-Za-z0-9_-]+$ ]]; then
+      echo "Invalid query type: $query_type" >&2
+      exit 2
+    fi
+  done
+else
+  query_types=$(find robustness-test/binary -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort -V)
+fi
 
 case "$dataset" in
   skitters|topcats|gplus|uspatent) ;;
@@ -41,7 +55,8 @@ fi
 declare -A status_counts=([NORMAL]=0 [TIMEOUT]=0 [MEMORY_OUT]=0)
 
 for family in binary wcoj; do
-  while IFS= read -r sql_file; do
+  for query_type in $query_types; do
+    while IFS= read -r sql_file; do
     log_file="${output%.tsv}.log"
     query_name=${sql_file#robustness-test/"$family"/}
     if [[ "$resume" == true && -n "${completed_queries[$family/$query_name]+x}" ]]; then
@@ -70,7 +85,8 @@ for family in binary wcoj; do
       status_counts[$status]=$((status_counts[$status] + 1))
     fi
     printf '%s/%s: %s (%ss)\n' "$family" "$query_name" "$status" "$execution_time"
-  done < <(find "robustness-test/$family" -type f -name '*.sql' -print | sort -V)
+    done < <(find "robustness-test/$family/$query_type" -type f -name '*.sql' -print 2>/dev/null | sort -V)
+  done
 done
 
 rm -f "${output%.tsv}.log"
