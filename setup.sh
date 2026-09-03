@@ -22,3 +22,5 @@ sudo apt update
 sudo apt install tree default-jre liblog4j2-java cmake numactl tmux
 
 cargo install just
+
+curl -fsSL https://chatgpt.com/codex/install.sh | sh
