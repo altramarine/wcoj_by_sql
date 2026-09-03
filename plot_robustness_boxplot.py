@@ -101,7 +101,8 @@ def plot_results(results: pd.DataFrame, output: Path, dataset: str) -> None:
     axis.set_xticks([query_index * 3 + 1.5 for query_index in range(len(query_types))])
     axis.set_xticklabels(query_types)
     axis.set_xlabel("Query type")
-    axis.set_ylabel("Execution time (seconds)")
+    axis.set_yscale("log")
+    axis.set_ylabel("Execution time (seconds, log scale)")
     axis.set_title(f"{dataset} robustness test: execution-time variance")
     axis.grid(axis="y", linestyle="--", alpha=0.3)
     axis.legend(
