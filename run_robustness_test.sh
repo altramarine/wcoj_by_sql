@@ -3,8 +3,9 @@
 set -u
 
 usage() {
-  echo "Usage: $0 [-d DATASET] [-t SECONDS] [-o OUTPUT] [-q QUERY_TYPES] [-r]"
+  echo "Usage: $0 [-d DATASET] [-t SECONDS] [-o OUTPUT] [-q QUERY_TYPES] [-r] [-b]"
   echo "  QUERY_TYPES: query directories separated by spaces or commas, e.g. '3 4' or '3,4'"
+  echo "  -b: run queries/normal baselines for skitters, topcats, and uspatent"
 }
 
 dataset="skitters"
@@ -12,8 +13,9 @@ timeout_seconds="600"
 output="robustness-test/results-${dataset}.tsv"
 resume=false
 query_types=""
+baseline=false
 
-while getopts ":d:t:o:q:hr" option; do
+while getopts ":d:t:o:q:hrb" option; do
   case "$option" in
     d) dataset="$OPTARG" ;;
     t) timeout_seconds="$OPTARG" ;;
@@ -21,6 +23,7 @@ while getopts ":d:t:o:q:hr" option; do
     q) query_types="${OPTARG//,/ }" ;;
     h) usage; exit 0 ;;
     r) resume=true ;;
+    b) baseline=true ;;
     \?) usage >&2; exit 2 ;;
     :) echo "Option -$OPTARG requires an argument" >&2; usage >&2; exit 2 ;;
   esac
@@ -41,6 +44,48 @@ case "$dataset" in
   skitters|topcats|gplus|uspatent) ;;
   *) echo "Unsupported dataset: $dataset" >&2; exit 2 ;;
 esac
+
+if [[ "$baseline" == true ]]; then
+  mkdir -p "$(dirname "$output")"
+  printf 'dataset\tquery\tstatus\texecution_time\n' > "$output"
+  log_file="${output%.tsv}.log"
+
+  for baseline_dataset in skitters topcats uspatent; do
+    for query_type in $query_types; do
+      sql_file="queries/normal/${query_type}.sql"
+      [[ -f "$sql_file" ]] || continue
+
+      start_time=$(date +%s.%N)
+      timeout --signal=TERM --kill-after=10s "${timeout_seconds}s" \
+        uv run python run_sql.py "$sql_file" -d "$baseline_dataset" \
+          --timeout "$timeout_seconds" > "$log_file" 2>&1
+      exit_code=$?
+      end_time=$(date +%s.%N)
+
+      status=$(sed -n 's/^STATUS: //p' "$log_file" | tail -n 1)
+      if [[ -z "$status" ]]; then
+        elapsed_seconds=$(awk -v start="$start_time" -v end="$end_time" 'BEGIN { print end - start }')
+        if awk -v elapsed="$elapsed_seconds" -v limit="$timeout_seconds" 'BEGIN { exit !(elapsed >= limit) }'; then
+          status="TIMEOUT"
+        elif [[ "$exit_code" -eq 137 ]]; then
+          status="MEMORY_OUT"
+        else
+          status="ERROR"
+        fi
+      fi
+
+      execution_time=$(awk -v start="$start_time" -v end="$end_time" 'BEGIN { printf "%.3f", end - start }')
+      printf '%s\t%s\t%s\t%s\n' \
+        "$baseline_dataset" "${query_type}.sql" "$status" "$execution_time" >> "$output"
+      printf '%s/%s: %s (%ss)\n' \
+        "$baseline_dataset" "${query_type}.sql" "$status" "$execution_time"
+    done
+  done
+
+  rm -f "$log_file"
+  echo "Baseline results written to $output"
+  exit 0
+fi
 
 mkdir -p "$(dirname "$output")"
 if [[ "$resume" == true && -f "$output" ]]; then

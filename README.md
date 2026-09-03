@@ -8,6 +8,60 @@ uv sync
 run.sh
 ```
 
+## Robustness tests and plots
+
+Run robustness plans with a 15-minute timeout per query:
+
+```bash
+./run_robustness_test.sh \
+  -d skitters \
+  -t 900 \
+  -o robustness-test/results-skitters-15min.tsv
+```
+
+The regular result format is:
+
+```text
+family  query  status  execution_time
+```
+
+Run the normal SQL queries in `queries/normal` as baselines for `skitters`,
+`topcats`, and `uspatent`:
+
+```bash
+./run_robustness_test.sh \
+  -b \
+  -t 900 \
+  -o robustness-test/baseline.tsv
+```
+
+The baseline result format is:
+
+```text
+dataset  query  status  execution_time
+```
+
+`robustness-test/test.sh` keeps the commands for the complete experiment. Commands
+for result files that have already been generated are commented out; currently the
+active command generates `baseline.tsv`.
+
+Generate all regular and filtered plots from the `results-*-15min.tsv` files:
+
+```bash
+./robustness-test/plot.sh
+```
+
+The plots report slowdown relative to the matching baseline on a base-2 logarithmic
+axis. A successful baseline is the normalization time. If a baseline times out or
+runs out of memory, the median of the successful binary plans for that dataset and
+query type is used for both binary and WCOJ. That fallback time is shown in red below
+the query label. The baseline `1x` sample is included only in the binary box plot.
+
+Each box plot uses the five-number summary directly: 0%, 25%, 50%, 75%, and 100%.
+Timeout and out-of-memory plans are excluded from the box statistics and shown as
+red counts aligned at the top of the plot. The filtered plots additionally exclude
+disconnected binary plans containing `CROSS JOIN`.
+
 ## ```make_split_plan.py```
 
 This is a maker for split plans, split framework is:
