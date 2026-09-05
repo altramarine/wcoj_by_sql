@@ -14,7 +14,16 @@ cd "$repo_root"
 #     -o "robustness-test/results-${dataset}-15min.tsv"
 # done
 
+datasets=(epinions livejournal berkstan google amazon)
+
 ./run_robustness_test.sh \
   -b \
-  -t 900 \
-  -o robustness-test/baseline.tsv
+  -d "${datasets[*]}" \
+  -t 900
+
+for dataset in "${datasets[@]}"; do
+  ./run_robustness_test.sh \
+    -d "$dataset" \
+    -t 900 \
+    -o "robustness-test/results-${dataset}-15min.tsv"
+done

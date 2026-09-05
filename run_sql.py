@@ -74,10 +74,16 @@ def run_sql_file(path: str, con=None, timeout=None):
     print(f"Execution time: {tm:.3f}s")
 
 DATASETS = {
-    "skitters":  "./datasets/as-skitter.csv",
-    "topcats":   "./datasets/wiki-topcats.csv",
-    "gplus":     "./datasets/gplus.csv",
-    "uspatent":  "./datasets/cit-Patents.csv",
+    "skitters": "./datasets/as-skitter.csv",
+    "topcats": "./datasets/wiki-topcats.csv",
+    "gplus": "./datasets/gplus.csv",
+    "uspatent": "./datasets/cit-Patents.csv",
+    "epinions": "./datasets/soc-Epinions1.csv",
+    "livejournal": "./datasets/soc-LiveJournal1.csv",
+    "twitter": "./datasets/twitter-2010.csv",
+    "berkstan": "./datasets/web-BerkStan.csv",
+    "google": "./datasets/web-Google.csv",
+    "amazon": "./datasets/amazon0601.csv",
 }
 
 if __name__ == "__main__":

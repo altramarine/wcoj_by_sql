@@ -13,7 +13,8 @@ run.sh
 `download.sh` retains the repository's original four downloads (`skitters`,
 `topcats`, `gplus`, and `uspatent`) and adds the six datasets from Table 8 of
 the paper. Each dataset is converted to a headerless `source,destination` CSV
-under `datasets/`; existing CSV files are left untouched:
+under `datasets/`; existing CSV files are left untouched. Downloaded `.txt.gz`
+and `.tar.gz` archives are removed automatically after successful conversion:
 
 ```bash
 ./download.sh
@@ -45,20 +46,27 @@ Run robustness plans with a 15-minute timeout per query:
   -o robustness-test/results-skitters-15min.tsv
 ```
 
+Multiple datasets can be supplied with spaces, commas, or repeated `-d`
+arguments. Without `-o`, each dataset is written to its own result file:
+
+```bash
+./run_robustness_test.sh -d "skitters,epinions,amazon" -t 900
+```
+
 The regular result format is:
 
 ```text
 family  query  status  execution_time
 ```
 
-Run the normal SQL queries in `queries/normal` as baselines for `skitters`,
-`topcats`, and `uspatent`:
+Run the normal SQL queries in `queries/normal` as baselines. Results for every
+selected dataset are appended to the shared `robustness-test/baseline.tsv`:
 
 ```bash
 ./run_robustness_test.sh \
   -b \
-  -t 900 \
-  -o robustness-test/baseline.tsv
+  -d "skitters epinions amazon" \
+  -t 900
 ```
 
 The baseline result format is:
@@ -69,7 +77,7 @@ dataset  query  status  execution_time
 
 `robustness-test/test.sh` keeps the commands for the complete experiment. Commands
 for result files that have already been generated are commented out; currently the
-active command generates `baseline.tsv`.
+active command appends to `baseline.tsv`.
 
 Generate all regular and filtered plots from the `results-*-15min.tsv` files:
 

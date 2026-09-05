@@ -15,12 +15,15 @@ for input in robustness-test/results-*-15min.tsv; do
   fi
 
   filename=${input##*/}
+  dataset=${filename#results-}
+  dataset=${dataset%-15min.tsv}
   output="robustness-test/${filename%.tsv}-boxplot.png"
   filtered_output="robustness-test/filtered/${filename%.tsv}-boxplot.png"
+  baseline="robustness-test/baseline.tsv"
 
   uv run python plot_robustness_boxplot.py \
-    "$input" --baseline robustness-test/baseline.tsv -o "$output"
+    "$input" --baseline "$baseline" -o "$output"
   uv run python plot_robustness_boxplot.py \
-    "$input" --baseline robustness-test/baseline.tsv \
+    "$input" --baseline "$baseline" \
     --filtered -o "$filtered_output"
 done

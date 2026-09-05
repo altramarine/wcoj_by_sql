@@ -9,8 +9,8 @@ set -euo pipefail
 #
 #     source_vertex_id,destination_vertex_id
 #
-# The source archives are retained so interrupted conversions can be retried
-# without downloading the data again.
+# Source archives are removed after a successful conversion. If conversion
+# fails, the archive is retained so it can be inspected or retried.
 
 readonly DATASET_DIR="${DATASET_DIR:-datasets}"
 
@@ -53,6 +53,7 @@ download_and_convert() {
 
   if [[ -s "$csv" ]]; then
     echo "Already exists, skipping: ${csv}"
+    rm -f -- "$archive"
     return
   fi
 
@@ -87,6 +88,7 @@ download_and_convert() {
   fi
 
   mv -- "$tmp" "$csv"
+  rm -f -- "$archive"
   echo "Ready: ${csv} (${expected_edges} directed edges)"
 }
 
@@ -97,6 +99,7 @@ download_gplus() {
 
   if [[ -s "$csv" ]]; then
     echo "Already exists, skipping: ${csv}"
+    rm -f -- "$archive"
     return
   fi
 
@@ -126,6 +129,7 @@ download_gplus() {
   fi
 
   mv -- "$tmp" "$csv"
+  rm -f -- "$archive"
   echo "Ready: ${csv}"
 }
 
