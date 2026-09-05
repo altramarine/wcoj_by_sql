@@ -8,6 +8,32 @@ uv sync
 run.sh
 ```
 
+## Paper datasets
+
+`download.sh` retains the repository's original four downloads (`skitters`,
+`topcats`, `gplus`, and `uspatent`) and adds the six datasets from Table 8 of
+the paper. Each dataset is converted to a headerless `source,destination` CSV
+under `datasets/`; existing CSV files are left untouched:
+
+```bash
+./download.sh
+```
+
+With no arguments, the command downloads only the original four datasets.
+The paper datasets must be selected explicitly by name.
+
+Individual datasets can be selected by name. This is useful for the very large
+Twitter-2010 graph (the compressed download alone is about 5.5 GB, and the CSV
+requires substantially more space):
+
+```bash
+./download.sh skitters topcats gplus uspatent
+./download.sh epinions livejournal berkstan google amazon
+./download.sh twitter
+```
+
+Run `./download.sh --help` for the accepted names and output-directory option.
+
 ## Robustness tests and plots
 
 Run robustness plans with a 15-minute timeout per query:
