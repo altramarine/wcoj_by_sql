@@ -1,0 +1,22 @@
+negative_p_LP_extension	INVALID: counterexample degrees=(1,4), H(U)=0, H(V|U)=ln(4)
+LP_order	actual_entropy_LHS	naive_log_norm_RHS	normalized_log_mean_RHS
+-1	1.38629436112	-0.223143551314	0.470003629246
+-2	1.38629436112	-0.0303123109082	0.316261279372
+-4	1.38629436112	-0.000974660103914	0.172312135036
+query	/users/yp_wei/wcoj_by_sql/queries/1.sql
+dataset	topcats
+load_and_degree_seconds	4.808620
+pairwise_aggregation_seconds	4.193568
+edge_count	28511807
+exact_sum_min	779094625
+geometric_sum	1476746353.66
+mean_order	upper_bound_on_sum_min	bound_over_actual	guaranteed_max_ratio
+-0.25	1327060840.71	1.70333718	16
+-0.5	1224517811.78	1.57171898	4
+-1	1099497472.61	1.41125023	2
+-2	982117620.585	1.26058837	1.41421356
+-4	895461869.652	1.14936215	1.18920712
+-8	841663040.887	1.08030914	1.09050773
+-16	811557840.746	1.04166787	1.04427378
+-32	795624577.767	1.02121687	1.02189715
+note	These are pairwise-mean bounds, not negative-p LpBound outputs. Exact aggregation is not cheaper than min.

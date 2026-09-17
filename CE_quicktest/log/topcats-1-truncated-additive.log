@@ -1,0 +1,6 @@
+W1	2112368511
+W2	2662974839
+best_forward	(1871698414, 418, 'min(x,t)+(y-t)+')
+best_reverse	(2111732337, 5, 'min(y,t)+(x-t)+')
+evaluation_seconds	0.001629
+method	min(x,y) <= min(x,t) + max(y-t,0); weighted degree marginals only

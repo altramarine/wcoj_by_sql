@@ -1,0 +1,11 @@
+dataset	topcats
+query	queries/1.sql
+method	independent Rademacher signs
+size_rule	n-log-n; log means natural logarithm
+prepare_seconds	7.458736
+n	28511807
+m	1660964
+seed	20260915
+threads	64
+exact_K	1476746353.6683021
+exact_split	779094625

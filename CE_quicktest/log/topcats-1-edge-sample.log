@@ -1,0 +1,31 @@
+n	28511807
+preparation_seconds	6.302286161109805
+sampling	uniform, with replacement; seed 20260915
+variance_formula	Var(estimate)/total^2 = (n*sum(h^2)/total^2 - 1)/m
+K_exact	1476746353.668906
+K_square_sum	144833114063.0
+K_CV_squared	0.893567525014362
+S_exact	779094625.0
+S_square_sum	50143467265.0
+S_CV_squared	1.3553675477654594
+m	5340
+sample_from_resident_edges_seconds	0.00036109983921051025
+degree_lookup_and_estimation_seconds	0.0002959170378744602
+sample_endpoint_bytes	85440
+K_estimate	1486970525.2412305
+K_relative_error	0.006923444603010642
+K_relative_standard_error	0.012935793076269148
+S_estimate	780742975.7269663
+S_relative_error	0.0021157259645658844
+S_relative_standard_error	0.015931545672709276
+m	1660964
+sample_from_resident_edges_seconds	0.055540510918945074
+degree_lookup_and_estimation_seconds	0.03813043003901839
+sample_endpoint_bytes	26575424
+K_estimate	1476640482.1858342
+K_relative_error	-7.169239511495284e-05
+K_relative_standard_error	0.0007334720660856565
+S_estimate	779394363.3503146
+S_relative_error	0.0003847265026564184
+S_relative_standard_error	0.0009033341559812796
+warning	Estimates, not deterministic upper bounds. Timings assume resident edge arrays and degree arrays; streaming cache construction needs a pass over R1.

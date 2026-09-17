@@ -1,0 +1,11 @@
+load_and_degree_seconds	4.789613
+vertex_profile_collection_seconds	0.042928
+dataset	topcats
+distinct_vertex_degree_pairs	41736
+bound_seconds	0.344706
+matching	1871015295
+pair_capacity	1858550483
+directional_capacity	1641334827
+exact_sum_min	779094625
+exact_validation_seconds	0.865936
+note	Cached counts of each vertex indegree/outdegree pair; no edge pairings in the cache.

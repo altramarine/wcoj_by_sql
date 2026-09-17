@@ -1,0 +1,49 @@
+Physical column statistics (one atom; shared by all aliases):
+column=0 p=0 norm=1791489 log_norm=14.3985576756
+column=0 p=1 norm=28511807 log_norm=17.1658288402
+column=0 p=2 norm=45960.5103431 log_norm=10.735537836
+column=0 p=3 norm=10212.4391676 log_norm=9.23136178248
+column=0 p=4 norm=6296.94347874 log_norm=8.74781963255
+column=0 p=5 norm=5131.96920255 log_norm=8.54324472466
+column=0 p=0.5 norm=3.80924395143e+13 log_norm=31.2710369404
+column=0 p=0.33333333 norm=6.24500333215e+19 log_norm=45.580898444
+column=0 p=0.25 norm=1.07164793699e+26 log_norm=59.9364100096
+column=0 p=0.2 norm=1.87159214408e+32 log_norm=74.3095124584
+column=0 p=inf norm=3907 log_norm=8.27052509506
+column=1 p=0 norm=1791489 log_norm=14.3985576756
+column=1 p=1 norm=28511807.0004 log_norm=17.1658288402
+column=1 p=2 norm=380427.42532 log_norm=12.8490507031
+column=1 p=3 norm=255279.708417 log_norm=12.4501151187
+column=1 p=4 norm=241177.386964 log_norm=12.3932879872
+column=1 p=5 norm=238735.879871 log_norm=12.3831131147
+column=1 p=0.5 norm=2.16657903858e+13 log_norm=30.7067556526
+column=1 p=0.33333333 norm=3.2032235071e+19 log_norm=44.9132744156
+column=1 p=0.25 norm=5.2729996175e+25 log_norm=59.2272267129
+column=1 p=0.2 norm=9.00696900981e+31 log_norm=73.5781364949
+column=1 p=inf norm=238040 log_norm=12.3801940058
+
+Fractional constraints: slack at baseline optimum; maximum violation anywhere in baseline feasible region:
+atom=0 col=0 p=0.5 slack=6.99791462 max_violation=0.293349575 constraint=h_xy + 1 h_x <= 31.271036940424338
+atom=0 col=0 p=0.33333333 slack=12.2827198 max_violation=0.382045747 constraint=h_xy + 2 h_x <= 45.580898444034815
+atom=0 col=0 p=0.25 slack=17.6131751 max_violation=0.425091857 constraint=h_xy + 3 h_x <= 59.936410009569308
+atom=0 col=0 p=0.2 slack=22.9612212 max_violation=0.450547084 constraint=h_xy + 4 h_x <= 74.309512458377895
+atom=0 col=1 p=0.5 slack=9.23567998 max_violation=0.857630863 constraint=h_xy + 1 h_y <= 30.706755652604244
+atom=0 col=1 p=0.33333333 slack=17.2191891 max_violation=1.04966978 constraint=h_xy + 2 h_y <= 44.913274415628862
+atom=0 col=1 p=0.25 slack=25.3101317 max_violation=1.13427515 constraint=h_xy + 3 h_y <= 59.227226712859334
+atom=0 col=1 p=0.2 slack=33.4380318 max_violation=1.18192305 constraint=h_xy + 4 h_y <= 73.578136494932494
+atom=1 col=0 p=0.5 slack=12.6020079 max_violation=0.293349575 constraint=h_yz + 1 h_y <= 31.271036940424338
+atom=1 col=0 p=0.33333333 slack=20.6888597 max_violation=0.382045747 constraint=h_yz + 2 h_y <= 45.580898444034815
+atom=1 col=0 p=0.25 slack=28.8213616 max_violation=0.425091857 constraint=h_yz + 3 h_y <= 59.936410009569308
+atom=1 col=0 p=0.2 slack=36.9714544 max_violation=0.450547084 constraint=h_yz + 4 h_y <= 74.309512458377895
+atom=1 col=1 p=0.5 slack=12.0377266 max_violation=0.857630863 constraint=h_yz + 1 h_z <= 30.706755652604244
+atom=1 col=1 p=0.33333333 slack=20.0212357 max_violation=1.04966978 constraint=h_yz + 2 h_z <= 44.913274415628862
+atom=1 col=1 p=0.25 slack=28.1121783 max_violation=1.13427515 constraint=h_yz + 3 h_z <= 59.227226712859334
+atom=1 col=1 p=0.2 slack=36.2400784 max_violation=1.18192305 constraint=h_yz + 4 h_z <= 73.578136494932494
+atom=2 col=0 p=0.5 slack=6.99791462 max_violation=0.293349575 constraint=h_xz + 1 h_x <= 31.271036940424338
+atom=2 col=0 p=0.33333333 slack=12.2827198 max_violation=0.382045747 constraint=h_xz + 2 h_x <= 45.580898444034815
+atom=2 col=0 p=0.25 slack=17.6131751 max_violation=0.425091857 constraint=h_xz + 3 h_x <= 59.936410009569308
+atom=2 col=0 p=0.2 slack=22.9612212 max_violation=0.450547084 constraint=h_xz + 4 h_x <= 74.309512458377895
+atom=2 col=1 p=0.5 slack=9.23567998 max_violation=0.857630863 constraint=h_xz + 1 h_z <= 30.706755652604244
+atom=2 col=1 p=0.33333333 slack=17.2191891 max_violation=1.04966978 constraint=h_xz + 2 h_z <= 44.913274415628862
+atom=2 col=1 p=0.25 slack=25.3101317 max_violation=1.13427515 constraint=h_xz + 3 h_z <= 59.227226712859334
+atom=2 col=1 p=0.2 slack=33.4380318 max_violation=1.18192305 constraint=h_xz + 4 h_z <= 73.578136494932494

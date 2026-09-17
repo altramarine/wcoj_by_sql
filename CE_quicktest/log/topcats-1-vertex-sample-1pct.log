@@ -1,0 +1,18 @@
+method	independent uniform fixed-size key sets for A and B; without replacement; exact sampled degrees
+variance_check	passed exhaustive subsets of a 3x3 matrix for all 9 sample-size combinations
+preparation_with_full_degree_and_adjacency_seconds	5.990016476949677
+exact_reference_and_variance_statistics_seconds	0.5726246829144657
+N	28511807
+Va	1791489
+Vb	1791489
+exact_S	779094625.0
+trials_per_size	200
+row_contribution_square_sum	5843411707489.0
+column_contribution_square_sum	107006888520369.0
+edge_contribution_square_sum	50143467265.0
+requested_key_fraction	0.01
+actual_key_fraction	0.010000061401437575
+k_each_side	expected_retained_edges	mean_retained_edges	min_retained_edges	max_retained_edges	mean_estimate_S	mean_relative_error	relative_RMSE	theoretical_relative_RMSE	median_absolute_relative_error	p95_absolute_relative_error	max_absolute_relative_error	mean_query_seconds_with_resident_index	sampled_key_payload_bytes
+17915	2851.215713426247	2854.195	2328	4006	779213331.0068824	0.00015236404292020444	0.11815801028035532	0.13821697661394158	0.07261544802614012	0.23185124019677464	0.4553637509125905	0.005502836660016328	286640
+limitation	Timings assume full degree arrays and a prebuilt full adjacency index. This is an accuracy experiment, not a cheap DuckDB online collection algorithm. Estimates are not deterministic upper bounds.
+trials_file	log/topcats-1-vertex-sample-1pct.trials.tsv

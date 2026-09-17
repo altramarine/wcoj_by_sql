@@ -1,0 +1,134 @@
+
+baseline: upper_bound=2112368511
+status: optimal
+objective: 21.4710756719
+variables:
+  h_x = 9.02505632093
+  h_xy = 15.2480659964
+  h_xyz = 21.4710756719
+  h_xz = 15.2480659964
+  h_y = 6.22300967551
+  h_yz = 12.446019351
+  h_z = 6.22300967551
+boundary inequalities:
+  h_xy - 0.5 h_x <= 10.735537835972798
+  h_xy - 0.66666666666666674 h_x <= 9.2313617824847771
+  h_xz - 0.5 h_x <= 10.735537835972798
+  h_xz - 0.66666666666666674 h_x <= 9.2313617824847771
+  h_xy + 0 <= h_x + h_y
+  h_xz + 0 <= h_x + h_z
+  h_yz + 0 <= h_y + h_z
+  h_z + h_xyz <= h_xz + h_yz
+  h_y + h_xyz <= h_xy + h_yz
+  h_x + h_xyz <= h_xy + h_xz
+
+joint_integer: upper_bound=2112368511
+status: optimal
+objective: 21.4710756719
+variables:
+  h_x = 9.90692493893
+  h_xy = 15.6890003054
+  h_xyz = 21.4710756719
+  h_xz = 15.6890003054
+  h_y = 5.78207536651
+  h_yz = 11.564150733
+  h_z = 5.78207536651
+boundary inequalities:
+  h_xy - 0.5 h_x <= 10.735537835972798
+  h_xz - 0.5 h_x <= 10.735537835972798
+  1 h_xy + 2 h_yz - 2 h_y <= 27.253151038451691
+  h_xy + 0 <= h_x + h_y
+  h_xz + 0 <= h_x + h_z
+  h_yz + 0 <= h_y + h_z
+  h_z + h_xyz <= h_xz + h_yz
+  h_y + h_xyz <= h_xy + h_yz
+  h_x + h_xyz <= h_xy + h_xz
+
+joint_fractional: upper_bound=2112368511
+status: optimal
+objective: 21.4710756719
+variables:
+  h_x = 9.81347000178
+  h_xy = 15.6422728369
+  h_xyz = 21.4710756719
+  h_xz = 15.6422728369
+  h_y = 6.21902439222
+  h_yz = 12.0478272273
+  h_z = 5.82880283508
+boundary inequalities:
+  h_xy - 0.5 h_x <= 10.735537835972798
+  h_xz - 0.5 h_x <= 10.735537835972798
+  2 h_xy + 3 h_yz - 3 h_y <= 48.770954178973398
+  3 h_xy + 2 h_yz - 3 h_y <= 52.365399788533253
+  h_xz + 0 <= h_x + h_z
+  h_yz + 0 <= h_y + h_z
+  h_y + h_xyz <= h_xy + h_yz
+  h_x + h_xyz <= h_xy + h_xz
+
+joint_all: upper_bound=2112368511
+status: optimal
+objective: 21.4710756719
+variables:
+  h_x = 9.90692493893
+  h_xy = 15.6890003054
+  h_xyz = 21.4710756719
+  h_xz = 15.6890003054
+  h_y = 6.2657518608
+  h_yz = 12.0478272273
+  h_z = 5.78207536651
+boundary inequalities:
+  h_xy - 0.5 h_x <= 10.735537835972798
+  h_xz - 0.5 h_x <= 10.735537835972798
+  1 h_xy + 2 h_yz - 2 h_y <= 27.253151038451691
+  3 h_xy + 2 h_yz - 3 h_y <= 52.365399788533253
+  h_xz + 0 <= h_x + h_z
+  h_yz + 0 <= h_y + h_z
+  h_y + h_xyz <= h_xy + h_yz
+  h_x + h_xyz <= h_xy + h_xz
+
+Joint constraints tested:
+k=1, beta=1, gamma=1: 1 h_xy + 1 h_yz - 1 h_y <= 21.702709695367066
+k=1, beta=1, gamma=2: 1 h_xy + 2 h_yz - 2 h_y <= 27.253151038451691
+k=1, beta=1, gamma=3: 1 h_xy + 3 h_yz - 3 h_y <= 33.430572509612851
+k=1, beta=2, gamma=1: 2 h_xy + 1 h_yz - 2 h_y <= 31.678142493422762
+k=1, beta=2, gamma=2: 2 h_xy + 2 h_yz - 3 h_y <= 37.90405394276619
+k=1, beta=2, gamma=3: 2 h_xy + 3 h_yz - 4 h_y <= 44.205957783860015
+k=1, beta=3, gamma=1: 3 h_xy + 1 h_yz - 3 h_y <= 43.62674500689053
+k=1, beta=3, gamma=2: 3 h_xy + 2 h_yz - 4 h_y <= 49.952637553556457
+k=1, beta=3, gamma=3: 3 h_xy + 3 h_yz - 5 h_y <= 56.291506466070189
+k=2, beta=1, gamma=1: 1 h_xy + 1 h_yz <= 33.808699619517796
+k=2, beta=1, gamma=2: 1 h_xy + 2 h_yz - 1 h_y <= 37.609506755835568
+k=2, beta=1, gamma=3: 1 h_xy + 3 h_yz - 2 h_y <= 42.110260453779397
+k=2, beta=2, gamma=1: 2 h_xy + 1 h_yz - 1 h_y <= 38.533720456699157
+k=2, beta=2, gamma=2: 2 h_xy + 2 h_yz - 2 h_y <= 43.405419390734131
+k=2, beta=2, gamma=3: 2 h_xy + 3 h_yz - 3 h_y <= 48.770954178973398
+k=2, beta=3, gamma=1: 3 h_xy + 1 h_yz - 2 h_y <= 46.648717791492345
+k=2, beta=3, gamma=2: 3 h_xy + 2 h_yz - 3 h_y <= 52.365399788533253
+k=2, beta=3, gamma=3: 3 h_xy + 3 h_yz - 4 h_y <= 58.318182634938218
+k=3, beta=1, gamma=1: 1 h_xy + 1 h_yz + 1 h_y <= 47.654662934368339
+k=3, beta=1, gamma=2: 1 h_xy + 2 h_yz <= 50.820482146082263
+k=3, beta=1, gamma=3: 1 h_xy + 3 h_yz - 1 h_y <= 54.443377175647427
+k=3, beta=2, gamma=1: 2 h_xy + 1 h_yz <= 50.768017155832652
+k=3, beta=2, gamma=2: 2 h_xy + 2 h_yz - 1 h_y <= 54.550168493181275
+k=3, beta=2, gamma=3: 2 h_xy + 3 h_yz - 2 h_y <= 58.804574183733877
+k=3, beta=3, gamma=1: 3 h_xy + 1 h_yz - 1 h_y <= 55.573928974636672
+k=3, beta=3, gamma=2: 3 h_xy + 2 h_yz - 2 h_y <= 60.138865413636182
+k=3, beta=3, gamma=3: 3 h_xy + 3 h_yz - 3 h_y <= 65.108129086101201
+k=4, beta=1, gamma=1: 1 h_xy + 1 h_yz + 2 h_y <= 61.815348809156859
+k=4, beta=1, gamma=2: 1 h_xy + 2 h_yz + 1 h_y <= 64.70176954854692
+k=4, beta=1, gamma=3: 1 h_xy + 3 h_yz <= 67.908281719466103
+k=4, beta=2, gamma=1: 2 h_xy + 1 h_yz + 1 h_y <= 64.344798881542033
+k=4, beta=2, gamma=2: 2 h_xy + 2 h_yz <= 67.617399239035592
+k=4, beta=2, gamma=3: 2 h_xy + 3 h_yz - 1 h_y <= 71.241037790507633
+k=4, beta=3, gamma=1: 3 h_xy + 1 h_yz <= 67.819155480078436
+k=4, beta=3, gamma=2: 3 h_xy + 2 h_yz - 1 h_y <= 71.602727060238465
+k=4, beta=3, gamma=3: 3 h_xy + 3 h_yz - 2 h_y <= 75.750646773963695
+k=5, beta=1, gamma=1: 1 h_xy + 1 h_yz + 3 h_y <= 76.082098873162479
+k=5, beta=1, gamma=2: 1 h_xy + 2 h_yz + 2 h_y <= 78.815071720328447
+k=5, beta=1, gamma=3: 1 h_xy + 3 h_yz + 1 h_y <= 81.791116757701801
+k=5, beta=2, gamma=1: 2 h_xy + 1 h_yz + 2 h_y <= 78.3222496891307
+k=5, beta=2, gamma=2: 2 h_xy + 2 h_yz + 1 h_y <= 81.326977550291488
+k=5, beta=2, gamma=3: 2 h_xy + 3 h_yz <= 84.598423870197635
+k=5, beta=3, gamma=1: 3 h_xy + 1 h_yz + 1 h_y <= 81.188290541174467
+k=5, beta=3, gamma=2: 3 h_xy + 2 h_yz <= 84.541962665273118
+k=5, beta=3, gamma=3: 3 h_xy + 3 h_yz - 1 h_y <= 88.184199187586572

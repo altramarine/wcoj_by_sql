@@ -1,0 +1,18 @@
+method	independent uniform fixed-size key sets for A and B; without replacement; exact sampled degrees
+variance_check	passed exhaustive subsets of a 3x3 matrix for all 9 sample-size combinations
+preparation_with_full_degree_and_adjacency_seconds	6.002239736029878
+exact_reference_and_variance_statistics_seconds	0.5198717701714486
+N	28511807
+Va	1791489
+Vb	1791489
+exact_S	779094625.0
+trials_per_size	200
+row_contribution_square_sum	5843411707489.0
+column_contribution_square_sum	107006888520369.0
+edge_contribution_square_sum	50143467265.0
+k_each_side	expected_retained_edges	mean_retained_edges	min_retained_edges	max_retained_edges	mean_estimate_S	mean_relative_error	relative_RMSE	theoretical_relative_RMSE	median_absolute_relative_error	p95_absolute_relative_error	max_absolute_relative_error	mean_query_seconds_with_resident_index	sampled_key_payload_bytes
+5340	253.3255328746883	258.565	155	1081	802974420.9252176	0.030650700388566595	0.3545956950160902	0.26654150038309915	0.1494761631484628	0.4910308322791423	2.9087258520071413	0.0016329318343196065	85440
+24518	5340.31078797219	5348.125	4362	8802	777920042.1037413	-0.0015076254649538162	0.11781720764760797	0.11724718694001361	0.07097786703468739	0.23118001079071684	0.633823811229453	0.007098813781049103	392288
+50000	22209.381257512403	22227.675	19156	29510	780651229.5429791	0.001997965963350245	0.08086811325142616	0.08084989864196183	0.05577967666548922	0.1432224623001072	0.331066561058611	0.016990504420828074	800000
+limitation	Timings assume full degree arrays and a prebuilt full adjacency index. This is an accuracy experiment, not a cheap DuckDB online collection algorithm. Estimates are not deterministic upper bounds.
+trials_file	/users/yp_wei/wcoj_by_sql/log/topcats-1-vertex-sample.trials.tsv

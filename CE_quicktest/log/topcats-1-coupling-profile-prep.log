@@ -1,0 +1,20 @@
+load_and_degree_seconds	4.830593
+marginal_collection_seconds	0.010235
+dataset	topcats
+distinct_source_degrees	958
+distinct_destination_degrees	958
+edge_count	28511807
+coupling_and_all_bounds_seconds	0.057109
+upper_coupling_segments	1915
+best_fixed_candidates	2112368511
+k (inf=min)	coupling_lower	actual_B_k	coupling_upper	upper_over_actual
+0.25	880269120.698	-	2299801522.6	-
+0.5	780286924.943	-	2282740341.06	-
+1	673267352.486	-	2249871398.21	-
+2	585083966.05	-	2190789110.58	-
+4	526504687.976	-	2102485621.14	-
+8	492562946.238	-	2010100722.59	-
+16	474276606.454	-	1945740857.56	-
+32	464784637.468	-	1909782382.04	-
+inf	455047116	-	1871015295	-
+note	Coupling relaxes the actual edge structure. Requires cached weighted distributions, not only scalar norms.

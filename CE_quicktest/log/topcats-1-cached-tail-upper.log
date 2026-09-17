@@ -1,0 +1,20 @@
+input	cached exact tail occurrence histograms; no raw table or full degrees accessed
+heavy_exact_cost	217722990
+tail_exact_cost	561371635
+tail_independence_estimate	560921081.2929313
+tail_upper	949760791
+tail_upper_over_exact	1.6918574644406463
+total_exact_cost	779094625
+total_independence_estimate	778644071.2929313
+total_upper	1167483781
+total_upper_relative_slack	0.4985134584903599
+tail_sum_x	950462755
+tail_sum_y	1339285350
+original_LpBound_output_upper	2112368511
+reduction_vs_original_LpBound	0.4473105545171612
+previous_unsplit_marginal_upper	1871015295
+reduction_vs_unsplit_marginal_upper	0.3760159074487951
+read_cache_seconds	0.000489991856738925
+compute_bound_seconds	0.0001578370574861765
+verification	integer survival-sum equals sorted-occurrence coupling; upper >= exact tail
+limitation	cached inputs were built using full degrees and O(N) edge facts in previous experiment; this does not solve statistics collection cost

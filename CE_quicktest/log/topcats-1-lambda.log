@@ -1,0 +1,21 @@
+dataset	topcats
+query	queries/1.sql
+method	arithmetic: lambda*W1+(1-lambda)*W2
+statistics_source	log/topcats-degree-marginals.json
+W1	2112368511
+W2	2662974839
+lambda	upper_bound	bound_over_best_fixed
+0.0	2662974839.0	1.260658273
+0.1	2607914206.2	1.234592446
+0.2	2552853573.4	1.208526618
+0.3	2497792940.6	1.182460791
+0.4	2442732307.8	1.156394964
+0.5	2387671675.0	1.130329136
+0.6	2332611042.2	1.104263309
+0.7	2277550409.4	1.078197482
+0.8	2222489776.6	1.052131655
+0.9	2167429143.8	1.026065827
+1.0	2112368511.0	1.000000000
+best_lambda	1
+best_bound	2112368511
+note	Uses cached dataset statistics; no graph scan. This is arithmetic, not geometric weighting.

@@ -1,0 +1,19 @@
+dataset	topcats
+query	queries/1.sql
+method	independent Rademacher signs; m=ceil(sqrt(edge_count))
+prepare_seconds	6.858601
+n	28511807
+m	5340
+seed	20260915
+threads	16
+exact_K	1476746353.6683021
+exact_split	779094625
+build_seconds	18.794026946999999
+reduce_seconds	6.3860000000000002e-05
+estimate_K	4801154306.526576
+relative_error	2.2511705849825194
+empirical_standard_error	2097921962.7902317
+relative_standard_error	1.4206379840240693
+summary_bytes_three_arrays	128160
+samples	/users/yp_wei/wcoj_by_sql/log/topcats-1-sign-sketch.samples.tsv
+warning	Unbiased estimate, not a deterministic upper bound; empirical SE is diagnostic only.
