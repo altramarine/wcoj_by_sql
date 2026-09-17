@@ -96,6 +96,149 @@ Timeout and out-of-memory plans are excluded from the box statistics and shown a
 red counts aligned at the top of the plot. The filtered plots additionally exclude
 disconnected binary plans containing `CROSS JOIN`.
 
+## Quick test: fractional Lp bounds for triangle 1.sql
+
+Compare `p = 0, 1, 2, 3, 4, 5, infinity` with the same statistics plus
+`p = 1/2, 1/3, 1/4, 1/5`, and a third group using only those fractional
+moments (no key-count, integer-norm, or maximum-degree constraints):
+
+```bash
+uv run python quick_test_lp.py --dataset epinions
+```
+
+Save the summary and the existing LP formatter's variables and active boundary
+inequalities for all three estimates (overwrites the named log):
+
+```bash
+uv run python quick_test_lp.py --dataset topcats --log log/topcats-1-lp.log
+```
+
+The script uses `queries/1.sql` and its entropy LP template. All moments are
+collected together per physical column and reused across estimates. It reports
+only triangle output upper bounds, using both degree directions of all three
+atoms. It does not execute the triangle join. Inputs use set semantics.
+Loading, statistics collection, and each LP solve are
+timed separately; the first LP timing includes lazy solver import/startup, so it
+should not be compared directly with subsequent solve timings.
+
+The general statistics CLI also supports reciprocal moments:
+
+```bash
+uv run python lp_statistics.py --dataset epinions --query queries/1.sql \
+  --lp queries/lp_boundaries/1.sql.txt --max-p 5 --include-reciprocals
+```
+
+## Quick test: asymmetric Cauchy bounds
+
+Run a separate experiment for the first split of `queries/1.sql`:
+
+```bash
+uv run python quick_test_cauchy.py --dataset topcats --exact --log log/topcats-1-cauchy.log
+```
+
+This tests 21 exponents: `0.05, 0.10, ..., 0.95`, plus `1/3` and `2/3`.
+For each `p`, it reports
+`sqrt(sum(dout^(1+2p)) * sum(din*dout^(2-2p)))`, alongside both fixed
+candidate counts. All moments are aggregated together over a degree profile
+that aligns each vertex's indegree and outdegree. `--exact` separately validates
+the split work by summing `min(dout(source), dout(destination))` over distinct
+edges; it does not run the triangle join. Loading, degree preparation, moment
+collection, and exact validation are timed separately. The reported best exponent
+is the best tested grid point, not a continuous optimum. This experiment does
+not modify the triangle-output LP test.
+
+For different conjugate Holder exponents `r=1/t`, `s=1/(1-t)`, run:
+
+```bash
+uv run python quick_test_holder.py --dataset topcats --exact --log log/topcats-1-holder.log
+```
+
+This evaluates `A^(1/r) * B^(1/s)`, where
+`A=sum(dout^(1+p*r))` and `B=sum(din*dout^((1-p)*s))`.
+It tests 399 `(p,t)` grid pairs, then refines numerically over a bounded interior.
+The degree profile is compressed by exactly equal outdegrees (no approximate
+bins); numerical moment evaluations reuse that in-memory profile. This uses more
+information than the original cached scalar norm set, and the reported profile
+collection/search costs should be accounted for separately. The log includes the
+best Cauchy point, best Holder grid point, refinement status, and fixed-plan
+comparison. Refinement is not a certified global optimum.
+
+## Quick test: geometric versus additive min-power bounds
+
+```bash
+uv run python quick_test_min_power.py --dataset topcats --log log/topcats-1-min-power.log
+```
+
+For `p = 1/5, 1/4, 1/3, 1/2, 1, 2, 3, 4, 5` and
+`alpha = 1/4, 1/2, 3/4`, compare the exact sum of `min(x,y)^p` with
+`sum(x^(p*alpha)*y^(p*(1-alpha)))` and `sum(x^p+y^p)` along the edges.
+This means `i=2*p*alpha`, `j=2*p*(1-alpha)`, ensuring `i+j=2*p`.
+All 27 parameter combinations share one aggregate query over degree-annotated
+edges. This is an exact-statistics experiment, not a cheap planning estimator.
+The final log columns convert the power-sum bounds into bounds on `sum(min)`:
+for `p>=1` they use `N^(1-1/p)*bound^(1/p)`; for `p<1` they use the valid but
+potentially loose `bound^(1/p)` without a negative power of `N`.
+
+## Quick test: negative power means
+
+```bash
+uv run python quick_test_negative_mean.py --dataset topcats --log log/topcats-1-negative-mean.log
+```
+
+Tests the pairwise mean `F_k(x,y)=((x^(-k)+y^(-k))/2)^(-1/k)` for
+`k=1/4,1/2,1,2,4,8,16,32`. It satisfies
+`min(x,y) <= F_k(x,y) <= 2^(1/k)*min(x,y)` and converges down to min;
+a zero input uses the limiting value zero. The SQL uses an equivalent expression
+with min/max for numerical stability, so this experiment is not a cheaper
+alternative to exact min. The log first verifies a counterexample to substituting
+negative p into LpBound's positive-p entropy inequality. These pairwise means
+are not negative-p LP estimates, and the existing LP statistics API is unchanged.
+
+## Quick test: cheap coupling bounds for negative means
+
+Collect exact weighted degree marginals and optionally validate against edges:
+
+```bash
+uv run python quick_test_coupling.py --dataset topcats --exact \
+  --save-profile log/topcats-degree-marginals.json --log log/topcats-1-coupling.log
+```
+
+Evaluate bounds from the saved profile without reading the graph or degree tables:
+
+```bash
+uv run python quick_test_coupling.py --profile log/topcats-degree-marginals.json \
+  --log log/topcats-1-coupling-cached.log
+```
+
+Each source degree is weighted by its edge occurrences, and each destination
+degree by the total indegree of vertices with that outdegree. Equal degrees are
+compressed exactly; this is not approximate binning. Sorted matching maximizes
+the negative power mean over all couplings of these marginals, while reverse
+matching minimizes it. The `inf` row applies the same procedure directly to min.
+This needs richer cached statistics than a few scalar norms. The profiles must
+be regenerated when the data changes. Ignoring actual edge pairing makes the
+bound conservative; it does not exactly recover the true negative-mean sum.
+
+## Quick test: both-direction vertex capacities
+
+```bash
+uv run python quick_test_degree_capacity.py --dataset topcats --exact \
+  --save-profile log/topcats-vertex-degree-pairs.json --log log/topcats-1-degree-capacity.log
+uv run python quick_test_degree_capacity.py --profile log/topcats-vertex-degree-pairs.json \
+  --log log/topcats-1-degree-capacity-cached.log
+```
+
+For each integer threshold t, let V_t contain vertices with outdegree at least t.
+The number of edges within V_t cannot exceed either the sum of
+`min(outdegree(v), |V_t|)` or the sum of `min(indegree(v), |V_t|)` over V_t.
+Summing the smaller capacity over thresholds bounds the split candidate count.
+Fenwick trees evaluate these sums at degree change points without rescanning
+vertices for every threshold. The cached profile contains counts of vertices
+with each exact (outdegree, indegree) pair, not pairings of vertices across edges.
+This uses set semantics, permits self-loops, and is specific to the self-join in
+`queries/1.sql`. Its capacity bound is provably no larger than the marginal
+matching bound. Data changes require profile regeneration.
+
 ## ```make_split_plan.py```
 
 This is a maker for split plans, split framework is:

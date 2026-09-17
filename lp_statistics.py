@@ -74,6 +74,8 @@ def _inequality(
         return f"{h_uv} <= {_number(log_norm)}"
     if coefficient == 1:
         return f"{h_uv} - {h_u} <= {_number(log_norm)}"
+    if coefficient < 0:
+        return f"{h_uv} + {_number(-coefficient)} {h_u} <= {_number(log_norm)}"
     return f"{h_uv} - {_number(coefficient)} {h_u} <= {_number(log_norm)}"
 
 
@@ -131,8 +133,8 @@ def _degree_norms(
         "COUNT(*)::DOUBLE AS l0",
         "MAX(max_degree)::DOUBLE AS max_degree",
         *[
-            f"SUM(POW(degree / max_degree, {p}))::DOUBLE AS scaled_{p}"
-            for p in sorted(set(p_values))
+            f"SUM(POW(degree / max_degree, {p}))::DOUBLE AS scaled_{index}"
+            for index, p in enumerate(sorted(set(p_values)))
             if p > 0 and not math.isinf(p)
         ],
     ]
@@ -178,17 +180,20 @@ def compute_lp_statistics(
     table_names: Mapping[str, str] | None = None,
     max_p: int = 5,
     include_infinity: bool = True,
+    include_reciprocals: bool = False,
 ) -> list[LPStatistic]:
     """Compute Lp statistics for every column of every atom occurrence.
 
     Physical relation columns must be named ``col0``, ``col1``, etc.
     ``table_names`` optionally maps query relation names to DuckDB table names.
     Duplicate tuples are removed so the input is treated as a relation.
+    include_reciprocals adds p=1/2,...,1/max_p to the same aggregation.
     """
     if not isinstance(max_p, int) or max_p < 0:
         raise ValueError("max_p must be a nonnegative integer")
     p_values: tuple[int | float, ...] = (
         *range(max_p + 1),
+        *((1.0 / k for k in range(2, max_p + 1)) if include_reciprocals else ()),
         *((math.inf,) if include_infinity else ()),
     )
 
@@ -323,6 +328,11 @@ def main() -> None:
         help="generate L0 through this Lp, plus L-infinity (default: 5)",
     )
     parser.add_argument(
+        "--include-reciprocals",
+        action="store_true",
+        help="also collect L(1/2) through L(1/max-p) in the same aggregations",
+    )
+    parser.add_argument(
         "--query",
         "-q",
         type=Path,
@@ -345,6 +355,7 @@ def main() -> None:
         con,
         query=query,
         max_p=args.max_p,
+        include_reciprocals=args.include_reciprocals,
     )
     result = solve_lp_bound(
         args.query,
