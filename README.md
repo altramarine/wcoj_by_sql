@@ -85,6 +85,19 @@ Generate all regular and filtered plots from the `results-*-15min.tsv` files:
 ./robustness-test/plot.sh
 ```
 
+Compare one query across multiple datasets with repeated `DATASET=PATH`
+arguments:
+
+```bash
+uv run python single_query_multiple_dataset.py \
+  --query 5cycle \
+  --result topcats=robustness-test/results-topcats-5cycle-15min.tsv \
+  --baseline topcats=robustness-test/baseline-topcats-5cycle.tsv \
+  --result berkstan=robustness-test/results-berkstan-5cycle-15min.tsv \
+  --baseline berkstan=robustness-test/baseline-berkstan-5cycle.tsv \
+  -o robustness-test/results-topcats-berkstan-5cycle-15min-boxplot.png
+```
+
 The plots report slowdown relative to the matching baseline on a base-2 logarithmic
 axis. A successful baseline is the normalization time. If a baseline times out or
 runs out of memory, the median of the successful binary plans for that dataset and

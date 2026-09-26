@@ -62,14 +62,15 @@ def calculate_slowdowns(
         )
         if baseline_time is None:
             binary_times = group.loc[group["family"] == "binary", TIME_COLUMN]
-            baseline_time = (
-                binary_times.median()
-                if not binary_times.empty
-                else group[TIME_COLUMN].median()
-            )
+            if not binary_times.empty:
+                baseline_time = binary_times.median()
+                fallback_name = "binary plan median"
+            else:
+                baseline_time = group[TIME_COLUMN].median()
+                fallback_name = "successful plan median"
             print(
                 f"No usable baseline for {query_type}; "
-                f"using binary plan median ({baseline_time:.3f}s)"
+                f"using {fallback_name} ({baseline_time:.3f}s)"
             )
         reference_times[query_type] = baseline_time
         normalized.loc[group.index, TIME_COLUMN] /= baseline_time
@@ -90,7 +91,11 @@ def filter_disconnected_binary_plans(results: pd.DataFrame) -> pd.DataFrame:
         print("Excluded disconnected binary plans:")
         for query in excluded_queries:
             print(f"  {query}")
-    return results[~results["query"].isin(excluded_queries)].copy()
+    excluded_mask = (
+        (results["family"] == "binary")
+        & results["query"].isin(excluded_queries)
+    )
+    return results[~excluded_mask].copy()
 
 
 def plot_results(
