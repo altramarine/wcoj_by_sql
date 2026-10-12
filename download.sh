@@ -12,7 +12,7 @@ set -euo pipefail
 # Source archives are removed after a successful conversion. If conversion
 # fails, the archive is retained so it can be inspected or retried.
 
-readonly DATASET_DIR="${DATASET_DIR:-datasets}"
+readonly DATASET_DIR="${DATASET_DIR:-/data/wcoj_by_sql/datasets}"
 
 usage() {
   cat <<'EOF'

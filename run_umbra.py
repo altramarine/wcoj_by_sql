@@ -9,11 +9,13 @@ import queue
 UMBRA_IMAGE = "umbradb/umbra:latest"
 UMBRA_IMAGE_WCOJ = "umbradb/umbra:25.07.1"
 
+DATASET_DIR = os.environ.get("DATASET_DIR", "/data/wcoj_by_sql/datasets")
+
 DATASETS = {
-    "skitters": "./datasets/as-skitter.csv",
-    "topcats":  "./datasets/wiki-topcats.csv",
-    "gplus":    "./datasets/gplus.csv",
-    "uspatent": "./datasets/cit-Patents.csv",
+    "skitters": f"{DATASET_DIR}/as-skitter.csv",
+    "topcats":  f"{DATASET_DIR}/wiki-topcats.csv",
+    "gplus":    f"{DATASET_DIR}/gplus.csv",
+    "uspatent": f"{DATASET_DIR}/cit-Patents.csv",
 }
 
 

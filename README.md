@@ -10,10 +10,29 @@ run.sh
 
 ## Paper datasets
 
+`setup.sh` calls `load_datasets.sh` to copy existing files from the repository's
+`datasets/` directory and download any missing datasets among all ten supported
+datasets (including Twitter-2010). To run this step separately:
+
+```bash
+bash load_datasets.sh
+```
+
+To copy only existing local CSVs and archives without downloading:
+
+```bash
+bash load_datasets.sh --local-only
+```
+
+The default destination is `/data/wcoj_by_sql/datasets`. Set `DATASET_DIR` to
+override it for loading, downloading, and running queries. Original local files
+are preserved; existing destination files must match before they are reused.
+
+
 `download.sh` retains the repository's original four downloads (`skitters`,
 `topcats`, `gplus`, and `uspatent`) and adds the six datasets from Table 8 of
 the paper. Each dataset is converted to a headerless `source,destination` CSV
-under `datasets/`; existing CSV files are left untouched. Downloaded `.txt.gz`
+under `/data/wcoj_by_sql/datasets/`; existing CSV files are left untouched. Downloaded `.txt.gz`
 and `.tar.gz` archives are removed automatically after successful conversion:
 
 ```bash

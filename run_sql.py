@@ -73,17 +73,19 @@ def run_sql_file(path: str, con=None, timeout=None):
             signal.signal(signal.SIGALRM, previous_handler)
     print(f"Execution time: {tm:.3f}s")
 
+DATASET_DIR = os.environ.get("DATASET_DIR", "/data/wcoj_by_sql/datasets")
+
 DATASETS = {
-    "skitters": "./datasets/as-skitter.csv",
-    "topcats": "./datasets/wiki-topcats.csv",
-    "gplus": "./datasets/gplus.csv",
-    "uspatent": "./datasets/cit-Patents.csv",
-    "epinions": "./datasets/soc-Epinions1.csv",
-    "livejournal": "./datasets/soc-LiveJournal1.csv",
-    "twitter": "./datasets/twitter-2010.csv",
-    "berkstan": "./datasets/web-BerkStan.csv",
-    "google": "./datasets/web-Google.csv",
-    "amazon": "./datasets/amazon0601.csv",
+    "skitters": f"{DATASET_DIR}/as-skitter.csv",
+    "topcats": f"{DATASET_DIR}/wiki-topcats.csv",
+    "gplus": f"{DATASET_DIR}/gplus.csv",
+    "uspatent": f"{DATASET_DIR}/cit-Patents.csv",
+    "epinions": f"{DATASET_DIR}/soc-Epinions1.csv",
+    "livejournal": f"{DATASET_DIR}/soc-LiveJournal1.csv",
+    "twitter": f"{DATASET_DIR}/twitter-2010.csv",
+    "berkstan": f"{DATASET_DIR}/web-BerkStan.csv",
+    "google": f"{DATASET_DIR}/web-Google.csv",
+    "amazon": f"{DATASET_DIR}/amazon0601.csv",
 }
 
 if __name__ == "__main__":
