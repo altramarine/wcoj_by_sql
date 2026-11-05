@@ -1,0 +1,8 @@
+{
+  "python": "3.12.15",
+  "platform": "Linux-5.15.0-187-generic-x86_64-with-glibc2.35",
+  "cpu": "AMD EPYC 7543 32-Core Processor",
+  "logical_cpus": 128,
+  "affinity_cpus": 128,
+  "recorded_utc": "2026-11-05T06:20:12.139734+00:00"
+}

@@ -1,0 +1,1 @@
+SELECT count(*) FROM R AS e0, R AS e1, R AS e2, R AS e3, R AS e4 WHERE e1.col0 = e0.col1 AND e2.col0 = e1.col1 AND e3.col0 = e2.col1 AND e4.col0 = e3.col1 AND e4.col1 = e0.col0;

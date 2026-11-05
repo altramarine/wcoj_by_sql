@@ -1,0 +1,503 @@
+{
+  "duckdb": "1.3.0",
+  "dataset": "/data/wcoj_by_sql/datasets/amazon0601.csv",
+  "sample": "first N CSV edges in file order, then set deduplication; no graph symmetrization",
+  "requested_rows": 10000,
+  "loaded_rows": 10000,
+  "edge_sequence_sha256": "a34b9fe84a1efdafc6c4004a8ac8d35b9b214fb75bb02e7b00b6c48c1c12a8ef",
+  "distinct_edges": 10000,
+  "threads": 32,
+  "memory": "8GB",
+  "timeout_seconds": 10,
+  "repeats": 3,
+  "warmups": 1,
+  "seed": 42,
+  "timing": "fresh connections; immutable cached input; all SQL statements, including preprocessing and COUNT; excludes input loading and SQL generation",
+  "plans": [
+    {
+      "source": "5cycle/h1.dl",
+      "source_sha256": "9c69bad9ce5219ea03a1bbb746a9ab466b003f78a2b085aafe347528dd2fa28b",
+      "unsplit_default_duckdb": {
+        "status": "ok",
+        "count": 1172115,
+        "seconds": 0.05793916992843151
+      },
+      "layouts": {
+        "ctas": {
+          "sql_sha256": "e96e33cda18a33e648b93d4ad3ddb2b96cb2dc9772ea8219e542a94d2bfc6ceb",
+          "runs": [
+            {
+              "status": "ok",
+              "count": 1172115,
+              "seconds": 0.447989362757653
+            },
+            {
+              "status": "ok",
+              "count": 1172115,
+              "seconds": 0.46747549902647734
+            },
+            {
+              "status": "ok",
+              "count": 1172115,
+              "seconds": 0.4676406290382147
+            }
+          ],
+          "warmup_runs": [
+            {
+              "status": "ok",
+              "count": 1172115,
+              "seconds": 0.46826744778081775
+            }
+          ],
+          "median_seconds": 0.46747549902647734
+        },
+        "cte_all": {
+          "sql_sha256": "bd098a31512ef12c5a2462961fe50ff4fc5c992fb8f666a8baa4578f5c4492a6",
+          "runs": [
+            {
+              "status": "ok",
+              "count": 1172115,
+              "seconds": 0.046932523138821125
+            },
+            {
+              "status": "ok",
+              "count": 1172115,
+              "seconds": 0.04094938701018691
+            },
+            {
+              "status": "ok",
+              "count": 1172115,
+              "seconds": 0.048007352743297815
+            }
+          ],
+          "warmup_runs": [
+            {
+              "status": "ok",
+              "count": 1172115,
+              "seconds": 0.08832560293376446
+            }
+          ],
+          "median_seconds": 0.046932523138821125
+        },
+        "cte_auto": {
+          "sql_sha256": "682da1b1902c258af79bed2087cc23890b475d8b98f1668f83e4db6873ac775c",
+          "runs": [
+            {
+              "status": "ok",
+              "count": 1172115,
+              "seconds": 0.04619298176839948
+            },
+            {
+              "status": "ok",
+              "count": 1172115,
+              "seconds": 0.048705756198614836
+            },
+            {
+              "status": "ok",
+              "count": 1172115,
+              "seconds": 0.05057120090350509
+            }
+          ],
+          "warmup_runs": [
+            {
+              "status": "ok",
+              "count": 1172115,
+              "seconds": 0.0626548733562231
+            }
+          ],
+          "median_seconds": 0.048705756198614836
+        }
+      },
+      "ctas_over_cte_auto": 9.597951772274754,
+      "counts_agree": true
+    },
+    {
+      "source": "5cycle_2/9r.dl",
+      "source_sha256": "c46c7f96f713103b472beef8b53552b6400968c0c9baa824b73eb32b7da51c92",
+      "unsplit_default_duckdb": {
+        "status": "ok",
+        "count": 541324,
+        "seconds": 0.3200212591327727
+      },
+      "layouts": {
+        "ctas": {
+          "sql_sha256": "37584b3c4bb5d8416966278a98c98251b591ef5b7725641c5c11e2a149623edb",
+          "runs": [
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.14860223699361086
+            },
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.14891944406554103
+            },
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.15063656074926257
+            }
+          ],
+          "warmup_runs": [
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.14202364208176732
+            }
+          ],
+          "median_seconds": 0.14891944406554103
+        },
+        "cte_all": {
+          "sql_sha256": "79f0ea09f676c316258cf3c3427a1a5039b1c78cb3ec31966d546cfa0fc47075",
+          "runs": [
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.028826821595430374
+            },
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.027208751067519188
+            },
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.02891786303371191
+            }
+          ],
+          "warmup_runs": [
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.025847511831671
+            }
+          ],
+          "median_seconds": 0.028826821595430374
+        },
+        "cte_auto": {
+          "sql_sha256": "9eb44181f29adb8665512faf35cea23b3bec5263e11948e5fd3eb1cf9b77ebcc",
+          "runs": [
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.028723586816340685
+            },
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.03164204303175211
+            },
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.029851978179067373
+            }
+          ],
+          "warmup_runs": [
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.02741382597014308
+            }
+          ],
+          "median_seconds": 0.029851978179067373
+        }
+      },
+      "ctas_over_cte_auto": 4.988595501854059,
+      "counts_agree": true
+    },
+    {
+      "source": "5cycle_2/9rr.dl",
+      "source_sha256": "844ad76981fce89aa0ce8d222bca6ffe4ff751df65fdae056d95001fd776453a",
+      "unsplit_default_duckdb": {
+        "status": "ok",
+        "count": 541324,
+        "seconds": 0.3210024437867105
+      },
+      "layouts": {
+        "ctas": {
+          "sql_sha256": "9e94a354779cfc33261a229c240aa2438552dd38f0dc400bcbf47124a5baf141",
+          "runs": [
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.15467134397476912
+            },
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.15088807279244065
+            },
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.16116628190502524
+            }
+          ],
+          "warmup_runs": [
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.1592117277905345
+            }
+          ],
+          "median_seconds": 0.15467134397476912
+        },
+        "cte_all": {
+          "sql_sha256": "445303311ae9e8e7b76f5f900b43ec883691b7f0730bc068cb7bd138602f75da",
+          "runs": [
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.0420032381080091
+            },
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.04189734905958176
+            },
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.039105420000851154
+            }
+          ],
+          "warmup_runs": [
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.039031622000038624
+            }
+          ],
+          "median_seconds": 0.04189734905958176
+        },
+        "cte_auto": {
+          "sql_sha256": "ed3f767d93e6953756a41ed26731019cdf8d5559e7a25cbc4e90918c7b10a603",
+          "runs": [
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.034369127824902534
+            },
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.03818648401647806
+            },
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.040399332996457815
+            }
+          ],
+          "warmup_runs": [
+            {
+              "status": "ok",
+              "count": 541324,
+              "seconds": 0.03703200398012996
+            }
+          ],
+          "median_seconds": 0.03818648401647806
+        }
+      },
+      "ctas_over_cte_auto": 4.050421188502875,
+      "counts_agree": true
+    },
+    {
+      "source": "5clique/h4.dl",
+      "source_sha256": "e263be07b2ca76c1d2424c5b38647918d559da516eff31a2d172f34deeb7464e",
+      "unsplit_default_duckdb": {
+        "status": "ok",
+        "count": 165500,
+        "seconds": 0.34222414111718535
+      },
+      "layouts": {
+        "ctas": {
+          "sql_sha256": "1beb1a84854eb75179ee9bfa412942006fe0ac0583c983dd4f997c8da3ab75a9",
+          "runs": [
+            {
+              "status": "ok",
+              "count": 165500,
+              "seconds": 0.21303219720721245
+            },
+            {
+              "status": "ok",
+              "count": 165500,
+              "seconds": 0.18334069987758994
+            },
+            {
+              "status": "ok",
+              "count": 165500,
+              "seconds": 0.2144464049488306
+            }
+          ],
+          "warmup_runs": [
+            {
+              "status": "ok",
+              "count": 165500,
+              "seconds": 0.21314085088670254
+            }
+          ],
+          "median_seconds": 0.21303219720721245
+        },
+        "cte_all": {
+          "sql_sha256": "58db7796bcc4cee325a8b50a972b1c5373c6105748478a48791f5a6347d4cf45",
+          "runs": [
+            {
+              "status": "ok",
+              "count": 165500,
+              "seconds": 0.04326332686468959
+            },
+            {
+              "status": "ok",
+              "count": 165500,
+              "seconds": 0.04990983800962567
+            },
+            {
+              "status": "ok",
+              "count": 165500,
+              "seconds": 0.058750635012984276
+            }
+          ],
+          "warmup_runs": [
+            {
+              "status": "ok",
+              "count": 165500,
+              "seconds": 0.052080136723816395
+            }
+          ],
+          "median_seconds": 0.04990983800962567
+        },
+        "cte_auto": {
+          "sql_sha256": "40ba1313d1a1a0df8110ffa6ebf67d68eeb1b8d5305889e18495665011fefcb4",
+          "runs": [
+            {
+              "status": "ok",
+              "count": 165500,
+              "seconds": 0.05048780515789986
+            },
+            {
+              "status": "ok",
+              "count": 165500,
+              "seconds": 0.04390006233006716
+            },
+            {
+              "status": "ok",
+              "count": 165500,
+              "seconds": 0.044786016922444105
+            }
+          ],
+          "warmup_runs": [
+            {
+              "status": "ok",
+              "count": 165500,
+              "seconds": 0.048621175810694695
+            }
+          ],
+          "median_seconds": 0.044786016922444105
+        }
+      },
+      "ctas_over_cte_auto": 4.756667635260355,
+      "counts_agree": true
+    },
+    {
+      "source": "5starfish/h4.dl",
+      "source_sha256": "01e5b70d1533f03b965672d6b455e58943da6861a59698d74fd67b533e3577cc",
+      "unsplit_default_duckdb": {
+        "status": "ok",
+        "count": 2887290,
+        "seconds": 0.2890623500570655
+      },
+      "layouts": {
+        "ctas": {
+          "sql_sha256": "1358ddfc7ac219eceefe34107d85f497746959d8b658b47e534ccb85e446b240",
+          "runs": [
+            {
+              "status": "ok",
+              "count": 2887290,
+              "seconds": 1.1367349619977176
+            },
+            {
+              "status": "ok",
+              "count": 2887290,
+              "seconds": 1.156292422208935
+            },
+            {
+              "status": "ok",
+              "count": 2887290,
+              "seconds": 1.1259074611589313
+            }
+          ],
+          "warmup_runs": [
+            {
+              "status": "ok",
+              "count": 2887290,
+              "seconds": 1.167795883025974
+            }
+          ],
+          "median_seconds": 1.1367349619977176
+        },
+        "cte_all": {
+          "sql_sha256": "ae04f1a3eab80e8df7ec68b48b739c6c23756d2868c14cfb511aa5a48bd63bb2",
+          "runs": [
+            {
+              "status": "ok",
+              "count": 2887290,
+              "seconds": 0.07250997703522444
+            },
+            {
+              "status": "ok",
+              "count": 2887290,
+              "seconds": 0.07281450880691409
+            },
+            {
+              "status": "ok",
+              "count": 2887290,
+              "seconds": 0.07094149803742766
+            }
+          ],
+          "warmup_runs": [
+            {
+              "status": "ok",
+              "count": 2887290,
+              "seconds": 0.07183398632332683
+            }
+          ],
+          "median_seconds": 0.07250997703522444
+        },
+        "cte_auto": {
+          "sql_sha256": "2154d90394caa403bf0d2c849671176aa1d176e5fd78fc041b9c8df1ea4f8ae4",
+          "runs": [
+            {
+              "status": "ok",
+              "count": 2887290,
+              "seconds": 0.08089341409504414
+            },
+            {
+              "status": "ok",
+              "count": 2887290,
+              "seconds": 0.06950188195332885
+            },
+            {
+              "status": "ok",
+              "count": 2887290,
+              "seconds": 0.07614339562132955
+            }
+          ],
+          "warmup_runs": [
+            {
+              "status": "ok",
+              "count": 2887290,
+              "seconds": 0.0770571930333972
+            }
+          ],
+          "median_seconds": 0.07614339562132955
+        }
+      },
+      "ctas_over_cte_auto": 14.928871410605854,
+      "counts_agree": true
+    }
+  ]
+}

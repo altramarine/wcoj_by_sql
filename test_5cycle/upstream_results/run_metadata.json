@@ -1,0 +1,20 @@
+{
+  "upstream_revision": "859f71273504f72e3f4cfd730f1067d725b9ce93",
+  "config_sha256": "7c33407115f7ed51699ec46ce7d4391d379ead1346af0e17ab2aa34a8fa3877f",
+  "duckdb": "1.3.0",
+  "workers": 64,
+  "seed": 42,
+  "repeat": 1,
+  "timeout_seconds": 600,
+  "memory_limit": "220GB",
+  "spill": false,
+  "queries": null,
+  "datasets": [
+    "amazon",
+    "berkstan"
+  ],
+  "algorithms": null,
+  "historical_results": "recorded FlowLog runs from upstream, different execution/hardware provenance; not a fresh runtime comparison",
+  "timing": "SQL parse, SET/RESET, input dedup, degree preprocessing, routing, joins, COUNT; excludes dataset load, connection startup and SQL generation; fresh read-only connections, no warmup",
+  "peak_memory_policy": "process ru_maxrss cumulative high-water mark only; no per-query memory claim"
+}

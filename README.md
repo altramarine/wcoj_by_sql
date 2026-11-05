@@ -56,6 +56,16 @@ Run `./download.sh --help` for the accepted names and output-directory option.
 
 ## Robustness tests and plots
 
+The [hand-selected FlowLog SQL rewrites](test_5cycle/README.md) translate all 80
+plans in `Partitioned-Join-Flowlog/robustness/hand_selected_split`, preserving
+multi-stage splits, projection filters, shared producers, and set semantics.
+The default backend uses an ordered WITH closure, disables join reordering and
+build/probe swapping, materializes shared producers, and streams the final count.
+Generated SQL runs against the same `R(col0,col1)` input used by the existing runner.
+The [upstream workload results](test_5cycle/upstream_results/README.md) replay
+the original hand-plan configuration on full Amazon and sampled BerkStan,
+including plan distributions, default DuckDB controls and count validation.
+
 Run robustness plans with a 15-minute timeout per query:
 
 ```bash

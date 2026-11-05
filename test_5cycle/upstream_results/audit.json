@@ -1,0 +1,17 @@
+{
+  "expected_matrix": 188,
+  "actual_records": 188,
+  "unique_cases": 188,
+  "configured_rule_programs": 86,
+  "distinct_inputs": 3,
+  "statuses": {
+    "ok": 187,
+    "memory_out": 1
+  },
+  "translated_rule_executions": 172,
+  "translated_counts_matching_historical": 172,
+  "direct_cq_mismatches": 0,
+  "sql_and_source_hashes_match": true,
+  "input_hashes_match": true,
+  "config_hash_matches": true
+}
